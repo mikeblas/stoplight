@@ -47,24 +47,48 @@ public:
 		val26 = gpiod_line_get_value(line26);
 	}
 
-	int GetAButton() {
+	int GetAButton() const {
 		return val26;
 	}
 
-	int GetBButton() {
+	int GetBButton() const {
 		return val19;
 	}
 
-	int GetCButton() {
+	int GetCButton() const {
 		return val13;
 	}
 
-	int GetDButton() {
+	int GetDButton() const {
 		return val6;
 	}
 
-	int GetVT() {
+	int GetVT() const {
 		return val5;
+	}
+
+	bool operator==(const Buttons& other) const {
+		if (GetAButton() != other.GetAButton())
+			return false;
+		if (GetBButton() != other.GetBButton())
+			return false;
+		if (GetCButton() != other.GetCButton())
+			return false;
+		if (GetDButton() != other.GetDButton())
+			return false;
+		return true;
+	}
+
+	bool operator!=(const Buttons& other) const {
+		return !operator==(other);
+	}
+
+	void operator=(const Buttons& other) {
+		val5 = other.val5;
+		val6 = other.val6;
+		val19 = other.val19;
+		val26 = other.val26;
+		val13 = other.val13;
 	}
 };
 
@@ -83,14 +107,23 @@ int main(void)
 	else
 	{
 		Buttons b1(chip);
+		b1.ReadLines();
+		int lastVT = b1.GetVT();
 
 		while(1) {
 
-			b1.ReadLines();
+			Buttons b2(chip);
+			b2.ReadLines();
 
-			printf("%d, %d, %d, %d, %d\n", b1.GetAButton(), b1.GetBButton(), b1.GetCButton(), b1.GetDButton(), b1.GetVT());
+			if (b2 != b1 || lastVT != b2.GetVT()) {
+
+				b1 = b2;
+				lastVT = b2.GetVT();
+
+				printf("%d, %d, %d, %d, %d\n", b1.GetAButton(), b1.GetBButton(), b1.GetCButton(), b1.GetDButton(), b1.GetVT());
+			}
+
 			usleep(100 * 1000);
-
 		}
 	}
 
