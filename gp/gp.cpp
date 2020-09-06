@@ -64,21 +64,6 @@ int main(void)
             printf("%d: (%d) %s %d\n", n, off, gpiod_line_name(bulk.lines[n]), gpiod_line_direction(bulk.lines[n]));
         }
 
-/*
-        int val = 0;
-        for (int i = 200; i > 0; i--) {
-            n = gpiod_line_set_value(line20, val);
-            n = gpiod_line_set_value(line21, val);
-            if (n < 0) {
-                perror("Set line output failed\n");
-                goto release_line;
-            }
-            printf("Output %u on line #%u\n", val, 21);
-            usleep((100 + (rand() % 500)) * 1000);
-            val = !val;
-        }
-*/
-
 	int ticks20 = 0;
 	int ticks21 = 0;
 	int state20 = 0;
