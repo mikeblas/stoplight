@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name StopLight4)(type KiCad)(uri C:/Projects/stoplight/pcb/StopLight4)(options "")(descr ""))
+)
