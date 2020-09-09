@@ -39,6 +39,16 @@ Then, we have one of a few modes active:
 * Weather indicator. Show tomorrow's predicted weather (temperature and precipitation)
 * Stock market indicator. If the market is open, show the change in a particualr index.
 
+## Layout
+
+`stoplightd` is the stoplight daemon program. This is the controller that runs on the Pi (as I'm working on it)
+
+`proto` are various fragments and scratch projects as I sort out GPIO, how the hardware works, and try out ideas.
+
+`pcb` is the hardware project for KiCad.
+
+
+
 
 
 
