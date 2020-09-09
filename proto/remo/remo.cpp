@@ -109,18 +109,25 @@ int main(void)
 		Buttons b1(chip);
 		b1.ReadLines();
 		int lastVT = b1.GetVT();
+		int ignores = 0;
 
 		while(1) {
 
-			Buttons b2(chip);
-			b2.ReadLines();
+			if (ignores > 0) {
+				ignores--;
+			} else {
 
-			if (b2 != b1 || lastVT != b2.GetVT()) {
+				Buttons b2(chip);
+				b2.ReadLines();
 
-				b1 = b2;
-				lastVT = b2.GetVT();
+				if (b2 != b1 || lastVT != b2.GetVT()) {
 
-				printf("%d, %d, %d, %d, %d\n", b1.GetAButton(), b1.GetBButton(), b1.GetCButton(), b1.GetDButton(), b1.GetVT());
+					b1 = b2;
+					lastVT = b2.GetVT();
+
+					printf("%d, %d, %d, %d, %d\n", b1.GetAButton(), b1.GetBButton(), b1.GetCButton(), b1.GetDButton(), b1.GetVT());
+					ignores = 3;
+				}
 			}
 
 			usleep(100 * 1000);
