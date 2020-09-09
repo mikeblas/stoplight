@@ -94,6 +94,28 @@ public:
 	}
 };
 
+
+class Buzzer {
+	struct gpiod_line* lineBuzz;
+
+public:
+	Buzzer(struct gpiod_chip* chip) {
+
+		lineBuzz = gpiod_chip_get_line(chip, 25);
+
+		gpiod_line_request_output(lineBuzz, STOPLIGHT_CLIENT, 0);
+	}
+
+	void On() {
+		gpiod_line_set_value(lineBuzz, 1);
+	}
+
+	void Off() {
+		gpiod_line_set_value(lineBuzz, 0);
+	}
+};
+
+
 class Lights {
 
 	struct gpiod_line* lineRed;
@@ -176,18 +198,31 @@ int main(void)
 	else
 	{
 		Lights lights(chip);
+		Buzzer buzz(chip);
+
+		buzz.On();
 		lights.FlickAll(3, 50);
+		buzz.Off();
 
 		Buttons b1(chip);
 		b1.ReadLines();
 		int lastVT = b1.GetVT();
 		int ignores = 0;
+		int buzzticks = 0;
 
 		while(1) {
+
+			if (buzzticks > 0) {
+				if (--buzzticks == 0) {
+					buzz.Off();
+				}
+			}
 
 			if (ignores > 0) {
 				ignores--;
 			} else {
+
+				buzz.Off();
 
 				Buttons b2(chip);
 				b2.ReadLines();
@@ -204,6 +239,9 @@ int main(void)
 
 					// if this is a release decide what to do
 					if (b2.GetVT() == 1) {
+						buzz.On();
+						buzzticks = 1;
+
 						printf("***\n");
 						if (b2.GetAButton()) {
 							lights.ToggleRed();
