@@ -1,5 +1,8 @@
 
 gp : gp.cpp
-	gcc -o gp gp.cpp -lgpiod
+	g++ -o gp gp.cpp -lgpiod
+
+clean :
+	rm -f gp
 
 

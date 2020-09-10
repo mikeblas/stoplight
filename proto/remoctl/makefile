@@ -1,5 +1,8 @@
 
 remoctl : remoctl.cpp
-	gcc -o remoctl remoctl.cpp -lgpiod
+	g++ -o remoctl remoctl.cpp -lgpiod
+
+clean : 
+	rm -f remoctl
 
 

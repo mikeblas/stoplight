@@ -1,5 +1,9 @@
 
 remowait : remowait.cpp
-	gcc -o remowait remowait.cpp -lgpiod
+	g++ -o remowait remowait.cpp -lgpiod
+
+clean :
+	rm -f remowait
+
 
 
