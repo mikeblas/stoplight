@@ -48,7 +48,9 @@ Then, we have one of a few modes active:
 `pcb` is the hardware project for KiCad.
 
 
+# Dependencies
 
+This project uses [libdaemonize](https://github.com/Aethelflaed/libdaemonize).
 
 
 
