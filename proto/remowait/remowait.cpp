@@ -7,7 +7,7 @@
 #define	CONSUMER	"Consumer"
 #endif
 
-int main(int argc, char **argv)
+int main(int /* argc */, char /* **argv */)
 {
 	const char *chipname = "gpiochip0";
 	unsigned int line_num = 5;

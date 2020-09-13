@@ -64,23 +64,23 @@ public:
    }
 };
 
-int main(int argc, const char** argv)
-{
+int main(int /* argc */, const char** /* argv */) {
+
    try
    {
-         daemonize::syslog syslog("my_daemon");
-         my_daemon d(syslog);
-         daemonize::daemonizer(d);
-      }
-      catch(int status)
-      {
-         return status;
-      }
-      catch(...)
-      {
-         return EXIT_FAILURE;
-      }
+      daemonize::syslog syslog("my_daemon");
+      my_daemon d(syslog);
+      daemonize::daemonizer(d);
+   }
+   catch(int status)
+   {
+      return status;
+   }
+   catch(...)
+   {
+      return EXIT_FAILURE;
+   }
 
-      return EXIT_SUCCESS;
+   return EXIT_SUCCESS;
 }
 

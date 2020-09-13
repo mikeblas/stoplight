@@ -1,6 +1,6 @@
 
 gp : gp.cpp
-	g++ -o gp gp.cpp -lgpiod
+	g++ -Wall -Wextra -o gp gp.cpp -lgpiod
 
 clean :
 	rm -f gp

@@ -34,13 +34,14 @@ int main(void)
     n = gpiod_chip_get_all_lines(chip, &bulk);
     if (n != 0) {
         perror("get lines failed\n");
+	goto freeChip;
     }
     else {
 
         gpiod_line *line20 = NULL;
         gpiod_line *line21 = NULL;
 
-        for (int n = 0; n < bulk.num_lines; ++n) {
+        for (unsigned int n = 0; n < bulk.num_lines; ++n) {
             int off = gpiod_line_offset(bulk.lines[n]);
 
             printf("%d: (%d) %s %d\n", n, off, gpiod_line_name(bulk.lines[n]), gpiod_line_direction(bulk.lines[n]));
@@ -58,7 +59,7 @@ int main(void)
             goto release_line;
         }
 
-        for (int n = 0; n < bulk.num_lines; ++n) {
+        for (unsigned int n = 0; n < bulk.num_lines; ++n) {
             int off = gpiod_line_offset(bulk.lines[n]);
 
             printf("%d: (%d) %s %d\n", n, off, gpiod_line_name(bulk.lines[n]), gpiod_line_direction(bulk.lines[n]));

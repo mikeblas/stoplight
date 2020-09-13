@@ -1,6 +1,6 @@
 
 remowait : remowait.cpp
-	g++ -o remowait remowait.cpp -lgpiod
+	g++ -Wall -Wextra -o remowait remowait.cpp -lgpiod
 
 clean :
 	rm -f remowait

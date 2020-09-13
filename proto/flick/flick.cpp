@@ -60,8 +60,8 @@ usage:
         int n;
         n = gpiod_line_request_output(line, STOPLIGHT_CLIENT, 0);
         if (n != 0) {
-            printf("Couldn't get line %d for output\n", line);
-            goto end;
+            printf("Couldn't get line %d for output\n", port);
+            goto freeChip;
         }
         else
         {
@@ -74,8 +74,6 @@ usage:
 	    }
         }
     }
-
-release_line:
 
 freeChip:
     gpiod_chip_close(chip);
