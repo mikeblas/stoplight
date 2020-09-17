@@ -1,3 +1,4 @@
+#pragma once
 
 #include <gpiod.h>
 
@@ -69,6 +70,6 @@ public:
         AllOff();
      }
     }
-}; 
+};
 
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <gpiod.h>
 
 
@@ -23,4 +25,5 @@ public:
            gpiod_line_set_value(lineBuzz, 0);
    }
 };
+
 
