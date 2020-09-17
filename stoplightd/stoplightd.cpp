@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <chrono>
+#include <condition_variable>
+#include <mutex>
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
@@ -19,6 +21,7 @@ class ModeInterface
 protected:
    Lights* pLights;
    daemonize::logger& log;
+   bool quitting = false;
 
 public:
    ModeInterface(Lights* pLights, daemonize::logger& log)
@@ -28,6 +31,11 @@ public:
 
    virtual void operator()() = 0;
    virtual void Shutdown() = 0;
+
+   bool IsQuitting() const
+   {
+      return quitting;
+   }
 
    virtual void OnAButtonPressed() { }
    virtual void OnAButtonReleased() { }
@@ -39,15 +47,22 @@ public:
    virtual void OnDButtonReleased() { }
 };
 
+
+
+
 class RegularLightMode : public ModeInterface
 {
 
-   bool quitting = false;
+   std::condition_variable cond;
+   std::mutex mtx;
+
 public:
    RegularLightMode(Lights* pLights, daemonize::logger& log)
       : ModeInterface(pLights, log)
       {
       }
+
+   RegularLightMode(const RegularLightMode&) = delete;
 
    virtual void Shutdown() override
    {
@@ -62,6 +77,9 @@ public:
    virtual void OnDButtonReleased() override
    {
       log << log.critical << "RegularLightMode: DButtonReleased" << std::endl;
+      std::lock_guard<std::mutex> lk(mtx);
+      cond.notify_one();
+      quitting = true;
    }
 
    virtual void operator()() override
@@ -73,6 +91,11 @@ public:
 
       while (!quitting)
       {
+
+         log << log.critical << "quitting state is " << quitting << std::endl;
+
+         std::unique_lock<std::mutex> lck(mtx);
+
          switch (state)
          {
             case 0:
@@ -80,7 +103,12 @@ public:
                pLights->AllOff();
                pLights->SetRed(1);
                log << log.critical << "Switched to red" << std::endl;
-               std::this_thread::sleep_for(24s);
+               // std::this_thread::sleep_for(24s);
+               if (cond.wait_for(lck, 4s) != std::cv_status::timeout)
+               {
+                  quitting = true;
+                  log << log.critical << "Signalled!!" << std::endl;
+               }
                break;
 
             case 2:
@@ -88,7 +116,12 @@ public:
                pLights->AllOff();
                pLights->SetYellow(1);
                log << log.critical << "Switched to yellow" << std::endl;
-               std::this_thread::sleep_for(8s);
+               // std::this_thread::sleep_for(8s);
+               if (cond.wait_for(lck, 2s) != std::cv_status::timeout)
+               {
+                  quitting = true;
+                  log << log.critical << "Signalled!!" << std::endl;
+               }
                break;
 
             case 1:
@@ -96,7 +129,12 @@ public:
                pLights->AllOff();
                pLights->SetGreen(1);
                log << log.critical << "Switched to green" << std::endl;
-               std::this_thread::sleep_for(88s);
+               // std::this_thread::sleep_for(88s);
+               if (cond.wait_for(lck, 8s) != std::cv_status::timeout)
+               {
+                  quitting = true;
+                  log << log.critical << "Signalled!!" << std::endl;
+               }
                break;
          }
       }
@@ -144,7 +182,7 @@ public:
          lights.AllOff();
 
          RegularLightMode mode(&lights, log);
-         std::thread my_thread(mode);
+         std::thread my_thread(std::ref(mode));
 
          buttons.ReadLines();
          int lastVT = buttons.GetVT();
@@ -236,10 +274,13 @@ public:
             }
 
             usleep(100 * 1000);
+            if (mode.IsQuitting())
+            {
+               log << log.critical << "Quitting!!" << std::endl;
+               my_thread.join();
+               break;
+            }
          }
-
-         my_thread.join();
-
       }
    }
 };
