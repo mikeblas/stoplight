@@ -1,7 +1,10 @@
 all: stoplightd
 
-stoplightd: stoplightd.o regularlightmode.o selectormode.o
+stoplightd: stoplightd.o regularlightmode.o selectormode.o main.o
 	g++ -Wall -Wextra -o $@  $^ -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
+
+main.o: main.cpp stoplightd.h
+	g++ -c -Wall -Wextra -o $@ $< -I /usr/include/libdaemonize-1.0
 
 stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h
 	g++ -c -Wall -Wextra -o $@ $< -I /usr/include/libdaemonize-1.0
@@ -18,4 +21,5 @@ clean:
 	-rm -f stoplightd
 	-rm -f regularlightmode.o
 	-rm -f selectormode.o
+	-rm -f main.o
 
