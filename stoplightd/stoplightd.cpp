@@ -54,6 +54,16 @@ public:
       quitting = true;
    }
 
+   virtual void OnDButtonPressed() override
+   {
+      log << log.critical << "RegularLightMode: DButtonPressed" << std::endl;
+   }
+
+   virtual void OnDButtonReleased() override
+   {
+      log << log.critical << "RegularLightMode: DButtonReleased" << std::endl;
+   }
+
    virtual void operator()() override
    {
 
@@ -170,8 +180,7 @@ public:
 
                   // yes! print out the flags
                   log << log.critical << "B1 = " << buttons.GetAButton() << ", " <<  buttons.GetBButton() << ", " << buttons.GetCButton() << ", " << buttons.GetDButton() << ", " << buttons.GetVT() << std::endl;
-//                  printf("b1 = %d, %d, %d, %d, %d\n", b1.GetAButton(), b1.GetBButton(), b1.GetCButton(), b1.GetDButton(), b1.GetVT());
-                  printf("b2 = %d, %d, %d, %d, %d\n", b2.GetAButton(), b2.GetBButton(), b2.GetCButton(), b2.GetDButton(), b2.GetVT());
+                  log << log.critical << "B2 = " << b2.GetAButton() << ", " <<  b2.GetBButton() << ", " << b2.GetCButton() << ", " << b2.GetDButton() << ", " << b2.GetVT() << std::endl;
 
                   // ignore three loops to debounce
                   ignores = 3;
@@ -183,7 +192,25 @@ public:
                      buzz.On();
                      buzzticks = 1;
 
-                     printf("***\n");
+                     if (b2.GetAButton())
+                     {
+                        mode.OnAButtonPressed();
+                     }
+                     if (b2.GetBButton())
+                     {
+                        mode.OnBButtonPressed();
+                     }
+                     if (b2.GetCButton())
+                     {
+                        mode.OnCButtonPressed();
+                     }
+                     if (b2.GetDButton())
+                     {
+                        mode.OnDButtonPressed();
+                     }
+                  }
+                  else
+                  {
                      if (b2.GetAButton())
                      {
                         mode.OnAButtonReleased();
