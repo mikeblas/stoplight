@@ -14,101 +14,10 @@
 #include "buttons.h"
 #include "buzzer.h"
 
+#include "regularlightmode.h"
+
 
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
-
-class RegularLightMode : public ModeInterface
-{
-
-   std::condition_variable cond;
-   std::mutex mtx;
-
-public:
-   RegularLightMode(Lights* pLights, daemonize::logger& log)
-      : ModeInterface(pLights, log)
-      {
-      }
-
-   RegularLightMode(const RegularLightMode&) = delete;
-
-   virtual void Shutdown() override
-   {
-      quitting = true;
-   }
-
-   virtual void OnDButtonPressed() override
-   {
-      log << log.critical << "RegularLightMode: DButtonPressed" << std::endl;
-   }
-
-   virtual void OnDButtonReleased() override
-   {
-      log << log.critical << "RegularLightMode: DButtonReleased" << std::endl;
-      std::lock_guard<std::mutex> lk(mtx);
-      cond.notify_one();
-      quitting = true;
-   }
-
-   virtual void operator()() override
-   {
-
-      using namespace std::chrono_literals;
-
-      int state = 0;
-
-      while (!quitting)
-      {
-
-         log << log.critical << "quitting state is " << quitting << std::endl;
-
-         std::unique_lock<std::mutex> lck(mtx);
-
-         switch (state)
-         {
-            case 0:
-               state = 1;
-               pLights->AllOff();
-               pLights->SetRed(1);
-               log << log.critical << "Switched to red" << std::endl;
-               // std::this_thread::sleep_for(24s);
-               if (cond.wait_for(lck, 4s) != std::cv_status::timeout)
-               {
-                  quitting = true;
-                  log << log.critical << "Signalled!!" << std::endl;
-               }
-               break;
-
-            case 2:
-               state = 0;
-               pLights->AllOff();
-               pLights->SetYellow(1);
-               log << log.critical << "Switched to yellow" << std::endl;
-               // std::this_thread::sleep_for(8s);
-               if (cond.wait_for(lck, 2s) != std::cv_status::timeout)
-               {
-                  quitting = true;
-                  log << log.critical << "Signalled!!" << std::endl;
-               }
-               break;
-
-            case 1:
-               state = 2;
-               pLights->AllOff();
-               pLights->SetGreen(1);
-               log << log.critical << "Switched to green" << std::endl;
-               // std::this_thread::sleep_for(88s);
-               if (cond.wait_for(lck, 8s) != std::cv_status::timeout)
-               {
-                  quitting = true;
-                  log << log.critical << "Signalled!!" << std::endl;
-               }
-               break;
-         }
-      }
-   }
-
-   // we don't listen to any buttons, so no overrides
-};
 
 class ModeFactory
 {

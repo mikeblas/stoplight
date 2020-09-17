@@ -1,3 +1,5 @@
+#pragma once
+
 #include <daemonize/syslog.hpp>
 
 #include "lights.h"
