@@ -12,10 +12,10 @@ class RegularLightMode : public ModeInterface
    std::mutex mtx;
 
 public:
-   RegularLightMode(Lights* pLights, daemonize::logger& log)
-      : ModeInterface(pLights, log)
-      {
-      }
+   RegularLightMode(Lights& lights, daemonize::logger& log)
+      : ModeInterface(lights, log)
+   {
+   }
 
    RegularLightMode(const RegularLightMode&) = delete;
 

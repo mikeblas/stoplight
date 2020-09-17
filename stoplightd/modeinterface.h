@@ -8,13 +8,13 @@ class ModeInterface
 {
 
 protected:
-   Lights* pLights;
+   Lights& lights;
    daemonize::logger& log;
    bool quitting = false;
 
 public:
-   ModeInterface(Lights* pLights, daemonize::logger& log)
-      : pLights(pLights), log(log)
+   ModeInterface(Lights& lights, daemonize::logger& log)
+      : lights(lights), log(log)
       {
       }
 

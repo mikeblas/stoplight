@@ -22,10 +22,9 @@ void RegularLightMode::operator()()
       {
          case 0:
             state = 1;
-            pLights->AllOff();
-            pLights->SetRed(1);
+            lights.AllOff();
+            lights.SetRed(1);
             log << log.critical << "Switched to red" << std::endl;
-            // std::this_thread::sleep_for(24s);
             if (cond.wait_for(lck, 4s) != std::cv_status::timeout)
             {
                quitting = true;
@@ -35,10 +34,9 @@ void RegularLightMode::operator()()
 
          case 2:
             state = 0;
-            pLights->AllOff();
-            pLights->SetYellow(1);
+            lights.AllOff();
+            lights.SetYellow(1);
             log << log.critical << "Switched to yellow" << std::endl;
-            // std::this_thread::sleep_for(8s);
             if (cond.wait_for(lck, 2s) != std::cv_status::timeout)
             {
                quitting = true;
@@ -48,10 +46,9 @@ void RegularLightMode::operator()()
 
          case 1:
             state = 2;
-            pLights->AllOff();
-            pLights->SetGreen(1);
+            lights.AllOff();
+            lights.SetGreen(1);
             log << log.critical << "Switched to green" << std::endl;
-            // std::this_thread::sleep_for(88s);
             if (cond.wait_for(lck, 8s) != std::cv_status::timeout)
             {
                quitting = true;

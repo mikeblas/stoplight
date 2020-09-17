@@ -15,7 +15,7 @@
 #include "buzzer.h"
 
 #include "regularlightmode.h"
-
+#include "selectormode.h"
 
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 
@@ -57,7 +57,8 @@ public:
 
          lights.AllOff();
 
-         RegularLightMode mode(&lights, log);
+         // RegularLightMode mode(lights, log);
+         SelectorMode mode(lights, log);
          std::thread my_thread(std::ref(mode));
 
          buttons.ReadLines();
