@@ -104,70 +104,68 @@ void stoplightd::dispatchmessages(ModeInterface* mode, Buttons& b2)
 
 
 
-void stoplightd::run() {
+void stoplightd::run()
+{
+   lights->AllOff();
+
+   // RegularLightMode mode(lights, log);
+   SelectorMode mode(*lights, log);
+   std::thread my_thread(std::ref(mode));
+
+   buttons->ReadLines();
+   int lastVT = buttons->GetVT();
+   int ignores = 0;
+
+   while(1)
+   {
+
+      if (buzzticks > 0)
       {
-
-         lights->AllOff();
-
-         // RegularLightMode mode(lights, log);
-         SelectorMode mode(*lights, log);
-         std::thread my_thread(std::ref(mode));
-
-         buttons->ReadLines();
-         int lastVT = buttons->GetVT();
-         int ignores = 0;
-
-
-         while(1)
+         if (--buzzticks == 0)
          {
-
-            if (buzzticks > 0)
-            {
-               if (--buzzticks == 0)
-               {
-                  buzzer->Off();
-               }
-            }
-
-            if (ignores > 0)
-            {
-               ignores--;
-            }
-            else
-            {
-
-               buzzer->Off();
-
-               Buttons b2(STOPLIGHT_CLIENT, chip);
-               b2.ReadLines();
-
-               // anything change since last time?
-               if (b2 != *buttons || lastVT != b2.GetVT())
-               {
-
-                  // yes! print out the flags
-                  log << log.critical << "B1 = " << buttons->GetAButton() << ", " <<  buttons->GetBButton() << ", " << buttons->GetCButton() << ", " << buttons->GetDButton() << ", " << buttons->GetVT() << std::endl;
-                  log << log.critical << "B2 = " << b2.GetAButton() << ", " <<  b2.GetBButton() << ", " << b2.GetCButton() << ", " << b2.GetDButton() << ", " << b2.GetVT() << std::endl;
-
-                  // ignore three loops to debounce
-                  ignores = 3;
-
-                  dispatchmessages(&mode, b2);
-
-                  // change states
-                  *buttons = b2;
-                  lastVT = b2.GetVT();
-               }
-            }
-
-            usleep(100 * 1000);
-            if (mode.IsQuitting())
-            {
-               log << log.critical << "Quitting!!" << std::endl;
-               my_thread.join();
-               break;
-            }
+            buzzer->Off();
          }
       }
+
+      if (ignores > 0)
+      {
+         ignores--;
+      }
+      else
+      {
+
+         buzzer->Off();
+
+         Buttons b2(STOPLIGHT_CLIENT, chip);
+         b2.ReadLines();
+
+         // anything change since last time?
+         if (b2 != *buttons || lastVT != b2.GetVT())
+         {
+
+            // yes! print out the flags
+            log << log.critical << "B1 = " << buttons->GetAButton() << ", " <<  buttons->GetBButton() << ", " << buttons->GetCButton() << ", " << buttons->GetDButton() << ", " << buttons->GetVT() << std::endl;
+            log << log.critical << "B2 = " << b2.GetAButton() << ", " <<  b2.GetBButton() << ", " << b2.GetCButton() << ", " << b2.GetDButton() << ", " << b2.GetVT() << std::endl;
+
+            // ignore three loops to debounce
+            ignores = 3;
+
+            dispatchmessages(&mode, b2);
+
+            // change states
+            *buttons = b2;
+            lastVT = b2.GetVT();
+         }
+      }
+
+      usleep(100 * 1000);
+      if (mode.IsQuitting())
+      {
+         log << log.critical << "Quitting!!" << std::endl;
+         my_thread.join();
+         break;
+      }
    }
+}
+
 
