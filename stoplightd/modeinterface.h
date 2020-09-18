@@ -18,13 +18,19 @@ public:
    {
    }
 
+   virtual ~ModeInterface() = default;
+
    virtual void operator()() = 0;
    virtual void Shutdown() = 0;
+
+   // -1 if this mode wants to keep running
+   // otherwise, a mode number to switch to that mode
    virtual int NewMode()
    {
       return -1;
    }
 
+   // this mode has quit running (exited)
    bool IsQuitting() const
    {
       return quitting;

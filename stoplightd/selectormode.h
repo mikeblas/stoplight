@@ -12,11 +12,12 @@ class SelectorMode : public ModeInterface
    std::mutex mtx;
 
    int mode;
+   int newMode;
 
 public:
    SelectorMode(Lights& lights, daemonize::logger& log)
       : ModeInterface(lights, log),
-        mode(0)
+        mode(0), newMode(-1)
    {
    }
 
@@ -63,12 +64,13 @@ public:
       log << log.critical << "RegularLightMode: CButtonReleased" << std::endl;
       std::lock_guard<std::mutex> lk(mtx);
       cond.notify_one();
+      newMode = mode;
       return CHANGE_MODE;
    }
 
    virtual int NewMode() override
    {
-      return mode;
+      return newMode;
    }
 
    virtual void operator()() override;

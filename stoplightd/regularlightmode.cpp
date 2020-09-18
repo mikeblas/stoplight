@@ -14,9 +14,7 @@ void RegularLightMode::operator()()
    while (!quitting)
    {
 
-      log << log.critical << "quitting state is " << quitting << std::endl;
-
-	          std::unique_lock<std::mutex> lck(mtx);
+      std::unique_lock<std::mutex> lck(mtx);
 
       switch (state)
       {

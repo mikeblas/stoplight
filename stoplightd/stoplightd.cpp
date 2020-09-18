@@ -3,13 +3,13 @@
 
 #include <thread>
 #include <chrono>
-#include <condition_variable>
-#include <mutex>
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
 
 #include "modeinterface.h"
+
+#include "modefactory.h"
 
 #include "lights.h"
 #include "buttons.h"
@@ -22,11 +22,6 @@
 
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 
-class ModeFactory
-{
-public:
-
-};
 
 
 stoplightd::stoplightd(daemonize::logger& log)
@@ -91,6 +86,7 @@ void stoplightd::dispatchmessages(ModeInterface* mode, Buttons& b2)
       {
          mode->OnBButtonReleased();
       }
+
       if (b2.GetCButton())
       {
          mode->OnCButtonReleased();
@@ -107,17 +103,22 @@ void stoplightd::dispatchmessages(ModeInterface* mode, Buttons& b2)
 
 void stoplightd::run()
 {
-   lights->AllOff();
-
-   // RegularLightMode mode(lights, log);
-   SelectorMode mode(*lights, log);
-   std::thread my_thread(std::ref(mode));
-
-   buttons->ReadLines();
-   int lastVT = buttons->GetVT();
    int ignores = 0;
 
-   while(1)
+   lights->AllOff();
+
+   // start up with null mode, which is standby/dark
+   ModeInterface* mode = nullptr;
+   std::thread* theThread = nullptr;
+
+   bool selectorMode = false;
+
+   // get the lines, and get started!
+   buttons->ReadLines();
+   int lastVT = buttons->GetVT();
+
+   // loop until we quit ...
+   while (true)
    {
 
       if (buzzticks > 0)
@@ -140,32 +141,81 @@ void stoplightd::run()
          Buttons b2(STOPLIGHT_CLIENT, chip);
          b2.ReadLines();
 
-         // anything change since last time?
-         if (b2 != *buttons || lastVT != b2.GetVT())
+         // if we have no mode, just see if any button pressed
+         if (mode == nullptr)
          {
+            if (b2.IsAnyButtonDown())
+            {
+               // enter selector mode
+               mode = ModeFactory::FromModeNumber(0, *lights, log);
+               selectorMode = true;
 
-            // yes! print out the flags
-            buttons->LogState(log, "B1");
-            b2.LogState(log, "B2");
+               log << log.critical << "starting selector mode thread" << std::endl;
+               theThread = new std::thread(std::ref(*mode));
+            }
+         }
+         else
+         {
+            // anything change since last time?
+            if (b2 != *buttons || lastVT != b2.GetVT())
+            {
 
-            // ignore three loops to debounce
-            ignores = 3;
+               // yes! print out the flags
+               buttons->LogState(log, "B1");
+               b2.LogState(log, "B2");
 
-            dispatchmessages(&mode, b2);
+               // ignore three loops to debounce
+               ignores = 3;
 
-            // change states
-            *buttons = b2;
-            lastVT = b2.GetVT();
+               dispatchmessages(mode, b2);
+
+               // change states
+               *buttons = b2;
+               lastVT = b2.GetVT();
+            }
+
+            // did we quit?
+            if (mode->IsQuitting())
+            {
+               log << log.critical << "Quitting! waiting for mode thread ..." << std::endl;
+               theThread->join();
+               delete theThread;
+               log << log.critical << "mode thread joined" << std::endl;
+
+               // delete the mode
+               delete mode;
+               mode = nullptr;
+
+               // if we were in selector mode, go to sleep
+               if (selectorMode)
+               {
+                  selectorMode = false;
+                  log << log.critical << "returning to idle mode" << std::endl;
+               }
+               else
+               {
+                  // otherwise, it was a work mode and we return to selector mode
+                  log << log.critical << "returning to selector mode" << std::endl;
+               }
+            }
+
+            // are we switching modes?
+            int newMode = mode->NewMode();
+            if (newMode != -1)
+            {
+               log << log.critical << "New mode selected: " << newMode << std::endl;
+               mode->Shutdown();
+               mode = ModeFactory::FromModeNumber(newMode + 1, *lights, log);
+
+               log << log.critical << "starting new mode thread" << std::endl;
+               theThread = new std::thread(std::ref(*mode));
+            }
          }
       }
 
-      usleep(100 * 1000);
-      if (mode.IsQuitting())
-      {
-         log << log.critical << "Quitting!!" << std::endl;
-         my_thread.join();
-         break;
-      }
+      // sleep 100 ms between tests
+      using namespace std::chrono_literals;
+      std::this_thread::sleep_for(100ms);
    }
 }
 

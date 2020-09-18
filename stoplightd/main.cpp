@@ -6,20 +6,25 @@
 
 #include "stoplightd.h"
 
-int main(int /* argc */, const char** /* argv */) {
+int main(int /* argc */, const char** /* argv */)
+{
+
+   daemonize::syslog syslog("stoplightd");
 
    try
    {
-      daemonize::syslog syslog("stoplightd");
       stoplightd d(syslog);
       daemonize::daemonizer(d);
    }
    catch(int status)
    {
+      syslog << syslog.critical << "exiting with status " << status << std::endl;
       return status;
    }
    catch(...)
    {
+
+      syslog << syslog.critical << "exiting with exception!" << std::endl;
       return EXIT_FAILURE;
    }
 

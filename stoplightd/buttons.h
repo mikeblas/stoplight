@@ -33,7 +33,7 @@ public:
       gpiod_line_request_input(line26, clientname);
    }
 
-   void ReadLines() 
+   void ReadLines()
    {
 
       val5 = gpiod_line_get_value(line5);
@@ -48,7 +48,7 @@ public:
       return val26;
    }
 
-   int GetBButton() const 
+   int GetBButton() const
    {
       return val19;
    }
@@ -66,6 +66,14 @@ public:
    int GetVT() const
    {
       return val5;
+   }
+
+   bool IsAnyButtonDown() const
+   {
+      if (!GetVT())
+         return false;
+
+      return (GetDButton() != 0) || (GetAButton() != 0) || (GetCButton() != 0) || (GetAButton() != 0);
    }
 
    bool operator==(const Buttons& other) const
