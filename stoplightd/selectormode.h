@@ -27,7 +27,7 @@ public:
       quitting = true;
    }
 
-   virtual void OnAButtonReleased() override
+   virtual ButtonResult OnAButtonReleased() override
    {
       log << log.critical << "SelectorMode: AButtonReleased" << std::endl;
       if (mode < 7)
@@ -35,9 +35,10 @@ public:
           mode++;
           UpdateLights();
       }
+      return NOTHING;
    }
 
-   virtual void OnBButtonReleased() override
+   virtual ButtonResult OnBButtonReleased() override
    {
       log << log.critical << "SelectorMode: BButtonReleased" << std::endl;
       if (mode > 0)
@@ -45,21 +46,29 @@ public:
           mode--;
           UpdateLights();
       }
+      return NOTHING;
    }
 
-   virtual void OnDButtonReleased() override
+   virtual ButtonResult OnDButtonReleased() override
    {
       log << log.critical << "RegularLightMode: DButtonReleased" << std::endl;
       std::lock_guard<std::mutex> lk(mtx);
       cond.notify_one();
       quitting = true;
+      return QUIT_MODE;
    }
 
-   virtual void OnCButtonReleased() override
+   virtual ButtonResult OnCButtonReleased() override
    {
       log << log.critical << "RegularLightMode: CButtonReleased" << std::endl;
       std::lock_guard<std::mutex> lk(mtx);
       cond.notify_one();
+      return CHANGE_MODE;
+   }
+
+   virtual int NewMode() override
+   {
+      return mode;
    }
 
    virtual void operator()() override;

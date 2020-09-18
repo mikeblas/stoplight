@@ -94,6 +94,17 @@ public:
       val26 = other.val26;
       val13 = other.val13;
    }
+
+   void LogState(daemonize::logger& log, const char* name)
+   {
+      log << log.critical << name << " = "
+          << GetAButton() << ", "
+          << GetBButton() << ", "
+          << GetCButton() << ", "
+          << GetDButton() << ", "
+          << GetVT() << std::endl;
+   }
+
 };
 
 

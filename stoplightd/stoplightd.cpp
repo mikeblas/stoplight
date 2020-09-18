@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+
 #include <thread>
 #include <chrono>
 #include <condition_variable>
@@ -144,8 +145,8 @@ void stoplightd::run()
          {
 
             // yes! print out the flags
-            log << log.critical << "B1 = " << buttons->GetAButton() << ", " <<  buttons->GetBButton() << ", " << buttons->GetCButton() << ", " << buttons->GetDButton() << ", " << buttons->GetVT() << std::endl;
-            log << log.critical << "B2 = " << b2.GetAButton() << ", " <<  b2.GetBButton() << ", " << b2.GetCButton() << ", " << b2.GetDButton() << ", " << b2.GetVT() << std::endl;
+            buttons->LogState(log, "B1");
+            b2.LogState(log, "B2");
 
             // ignore three loops to debounce
             ignores = 3;

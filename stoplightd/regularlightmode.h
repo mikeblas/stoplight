@@ -24,17 +24,19 @@ public:
       quitting = true;
    }
 
-   virtual void OnDButtonPressed() override
+   virtual ButtonResult OnDButtonPressed() override
    {
       log << log.critical << "RegularLightMode: DButtonPressed" << std::endl;
+      return NOTHING;
    }
 
-   virtual void OnDButtonReleased() override
+   virtual ButtonResult OnDButtonReleased() override
    {
       log << log.critical << "RegularLightMode: DButtonReleased" << std::endl;
       std::lock_guard<std::mutex> lk(mtx);
       cond.notify_one();
       quitting = true;
+      return QUIT_MODE;
    }
 
    virtual void operator()() override;

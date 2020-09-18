@@ -14,10 +14,10 @@ main.o: main.cpp stoplightd.h
 stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h
+regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-selectormode.o: selectormode.cpp selectormode.h lights.h
+selectormode.o: selectormode.cpp selectormode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 

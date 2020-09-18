@@ -15,24 +15,34 @@ protected:
 public:
    ModeInterface(Lights& lights, daemonize::logger& log)
       : lights(lights), log(log)
-      {
-      }
+   {
+   }
 
    virtual void operator()() = 0;
    virtual void Shutdown() = 0;
+   virtual int NewMode()
+   {
+      return -1;
+   }
 
    bool IsQuitting() const
    {
       return quitting;
    }
 
-   virtual void OnAButtonPressed() { }
-   virtual void OnAButtonReleased() { }
-   virtual void OnBButtonPressed() { }
-   virtual void OnBButtonReleased() { }
-   virtual void OnCButtonPressed() { }
-   virtual void OnCButtonReleased() { }
-   virtual void OnDButtonPressed() { }
-   virtual void OnDButtonReleased() { }
+   enum ButtonResult {
+      NOTHING,
+      CHANGE_MODE,
+      QUIT_MODE,
+   };
+
+   virtual ButtonResult OnAButtonPressed()  { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnAButtonReleased() { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnBButtonPressed()  { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnBButtonReleased() { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnCButtonPressed()  { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnCButtonReleased() { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnDButtonPressed()  { return ButtonResult::NOTHING; }
+   virtual ButtonResult OnDButtonReleased() { return ButtonResult::NOTHING; }
 };
 
