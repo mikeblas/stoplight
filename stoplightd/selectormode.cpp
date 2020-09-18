@@ -5,13 +5,10 @@
 void SelectorMode::operator()()
 {
 
-   using namespace std::chrono_literals;
-
+   // update lights for the first time,
+   // and after that we have no work to actively do
    mode = 0;
-
-   while (!quitting)
-   {
-   }
+   UpdateLights();
 }
 
 void SelectorMode::UpdateLights()

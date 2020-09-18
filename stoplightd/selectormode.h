@@ -26,6 +26,7 @@ public:
    virtual void Shutdown() override
    {
       quitting = true;
+      lights.AllOff();
    }
 
    virtual ButtonResult OnAButtonReleased() override

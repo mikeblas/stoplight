@@ -199,6 +199,15 @@ void stoplightd::run()
                {
                   // otherwise, it was a work mode and we return to selector mode
                   log << log.critical << "returning to selector mode" << std::endl;
+
+                  // enter selector mode
+                  mode = ModeFactory::FromModeNumber(0, *lights, log);
+                  selectorMode = true;
+
+                  log << log.critical << "starting selector mode thread" << std::endl;
+                  theThread = new std::thread(std::ref(*mode));
+                  log << log.critical << "selector mode thread started" << std::endl;
+
                   continue;
                }
             }

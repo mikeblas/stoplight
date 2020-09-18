@@ -4,5 +4,6 @@
 
 void RemoMode::operator()()
 {
+   lights.AllOff();
 }
 
