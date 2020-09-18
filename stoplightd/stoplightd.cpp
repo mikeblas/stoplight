@@ -152,6 +152,7 @@ void stoplightd::run()
 
                log << log.critical << "starting selector mode thread" << std::endl;
                theThread = new std::thread(std::ref(*mode));
+               log << log.critical << "selector mode thread started" << std::endl;
             }
          }
          else
@@ -186,16 +187,19 @@ void stoplightd::run()
                delete mode;
                mode = nullptr;
 
-               // if we were in selector mode, go to sleep
+               // if we were in selector mode, go to idle
                if (selectorMode)
                {
                   selectorMode = false;
                   log << log.critical << "returning to idle mode" << std::endl;
+                  lights->AllOff();
+                  continue;
                }
                else
                {
                   // otherwise, it was a work mode and we return to selector mode
                   log << log.critical << "returning to selector mode" << std::endl;
+                  continue;
                }
             }
 
@@ -205,10 +209,31 @@ void stoplightd::run()
             {
                log << log.critical << "New mode selected: " << newMode << std::endl;
                mode->Shutdown();
+               delete mode;
+
                mode = ModeFactory::FromModeNumber(newMode + 1, *lights, log);
 
-               log << log.critical << "starting new mode thread" << std::endl;
-               theThread = new std::thread(std::ref(*mode));
+               if (mode == nullptr)
+               {
+
+                  log << log.critical << "waiting for thread" << std::endl;
+
+                  // bogus mode, go to sleep
+                  theThread->join();
+                  delete theThread;
+                  theThread = nullptr;
+                  log << log.critical << "idle mode" << std::endl;
+                  lights->AllOff();
+
+               }
+               else
+               {
+
+                  log << log.critical << "starting new mode thread" << std::endl;
+                  theThread = new std::thread(std::ref(*mode));
+               }
+
+               selectorMode = false;
             }
          }
       }
