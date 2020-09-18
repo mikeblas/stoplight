@@ -5,7 +5,7 @@ LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
 
 all: stoplightd
 
-stoplightd: stoplightd.o regularlightmode.o selectormode.o main.o
+stoplightd: stoplightd.o regularlightmode.o selectormode.o main.o remomode.o
 	$(CXX) $(CXXFLAGS)  -o $@  $^ $(LDFLAGS)
 
 main.o: main.cpp stoplightd.h
@@ -18,6 +18,9 @@ regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterfa
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 selectormode.o: selectormode.cpp selectormode.h lights.h modeinterface.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+remomode.o: remomode.cpp remomode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 

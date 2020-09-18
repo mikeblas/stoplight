@@ -2,6 +2,7 @@
 
 #include "regularlightmode.h"
 #include "selectormode.h"
+#include "remomode.h"
 
 class ModeFactory
 {
@@ -18,6 +19,10 @@ public:
 
          case 1:
             p = new RegularLightMode(lights, log);
+            break;
+
+         case 2:
+            p = new RemoMode(lights, log);
             break;
 
          default:
