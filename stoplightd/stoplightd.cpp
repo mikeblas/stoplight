@@ -112,6 +112,7 @@ void stoplightd::run()
    std::thread* theThread = nullptr;
 
    bool selectorMode = false;
+   bool needRelease = false;
 
    // get the lines, and get started!
    buttons->ReadLines();
@@ -147,12 +148,20 @@ void stoplightd::run()
             if (b2.IsAnyButtonDown())
             {
                // enter selector mode
+               log << log.critical << "starting selector mode from idle" << std::endl;
+
                mode = ModeFactory::FromModeNumber(0, *lights, log);
                selectorMode = true;
 
                log << log.critical << "starting selector mode thread" << std::endl;
                theThread = new std::thread(std::ref(*mode));
                log << log.critical << "selector mode thread started" << std::endl;
+
+               needRelease = true;
+
+               // change states
+               *buttons = b2;
+               lastVT = b2.GetVT();
             }
          }
          else
@@ -161,14 +170,26 @@ void stoplightd::run()
             if (b2 != *buttons || lastVT != b2.GetVT())
             {
 
-               // yes! print out the flags
-               buttons->LogState(log, "B1");
-               b2.LogState(log, "B2");
+               if (needRelease)
+               {
+                  if (b2.GetVT() == 1)
+                  {
+                     log << log.critical << "selector mode got release" << std::endl;
+                     needRelease = false;
+                  }
+               }
+               else
+               {
 
-               // ignore three loops to debounce
-               ignores = 3;
+                  // yes! print out the flags
+                  buttons->LogState(log, "B1");
+                  b2.LogState(log, "B2");
 
-               dispatchmessages(mode, b2);
+                  // ignore three loops to debounce
+                  ignores = 3;
+
+                  dispatchmessages(mode, b2);
+               }
 
                // change states
                *buttons = b2;
