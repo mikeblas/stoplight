@@ -6,6 +6,7 @@
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
+#include <daemonize/signals.hpp>
 
 #include "modeinterface.h"
 
@@ -41,6 +42,7 @@ stoplightd::stoplightd(daemonize::logger& log)
    if (chip == nullptr)
    {
       log << log.critical << "Open chip failed" << std::endl;
+      exit(1);
    }
    else
    {
@@ -49,6 +51,7 @@ stoplightd::stoplightd(daemonize::logger& log)
       buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
 
       lights->AllOff();
+      daemonize::signals::enable(&log);
    }
 }
 
