@@ -27,7 +27,9 @@ static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 stoplightd::stoplightd(daemonize::logger& log)
    : daemon(log, "stoplightdpid", "/home/pi/"),
      lights(nullptr), buttons(nullptr), buzzer(nullptr),
-     buzzticks(0), chip(nullptr)
+     chip(nullptr), mode(nullptr),
+     selectorMode(false), needRelease(false),
+     theThread(nullptr)
 {
    log << log.critical << "entered run function" << std::endl;
 
@@ -44,20 +46,19 @@ stoplightd::stoplightd(daemonize::logger& log)
    {
       lights = new Lights(STOPLIGHT_CLIENT, chip);
       buttons = new Buttons(STOPLIGHT_CLIENT, chip);
-      buzzer = new Buzzer(STOPLIGHT_CLIENT, chip);
+      buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
 
       lights->AllOff();
    }
 }
 
 
-void stoplightd::dispatchmessages(ModeInterface* mode, Buttons& b2)
+void stoplightd::DispatchMessages(ModeInterface* mode, Buttons& b2)
 {
    // if this is a release decide what to do
    if (b2.GetVT() == 1)
    {
-      buzzer->On();
-      buzzticks = 1;
+      buzzer->OneBeep();
 
       if (b2.GetAButton())
       {
@@ -98,7 +99,16 @@ void stoplightd::dispatchmessages(ModeInterface* mode, Buttons& b2)
    }
 }
 
+void stoplightd::StartSelectorMode()
+{
 
+   mode = ModeFactory::FromModeNumber(0, *lights, log);
+   selectorMode = true;
+
+   log << log.critical << "starting selector mode thread" << std::endl;
+   theThread = new std::thread(std::ref(*mode));
+   log << log.critical << "selector mode thread started" << std::endl;
+}
 
 
 void stoplightd::run()
@@ -106,13 +116,6 @@ void stoplightd::run()
    int ignores = 0;
 
    lights->AllOff();
-
-   // start up with null mode, which is standby/dark
-   ModeInterface* mode = nullptr;
-   std::thread* theThread = nullptr;
-
-   bool selectorMode = false;
-   bool needRelease = false;
 
    // get the lines, and get started!
    buttons->ReadLines();
@@ -122,13 +125,7 @@ void stoplightd::run()
    while (true)
    {
 
-      if (buzzticks > 0)
-      {
-         if (--buzzticks == 0)
-         {
-            buzzer->Off();
-         }
-      }
+      buzzer->Advance();
 
       if (ignores > 0)
       {
@@ -136,8 +133,6 @@ void stoplightd::run()
       }
       else
       {
-
-         buzzer->Off();
 
          Buttons b2(STOPLIGHT_CLIENT, chip);
          b2.ReadLines();
@@ -150,12 +145,7 @@ void stoplightd::run()
                // enter selector mode
                log << log.critical << "starting selector mode from idle" << std::endl;
 
-               mode = ModeFactory::FromModeNumber(0, *lights, log);
-               selectorMode = true;
-
-               log << log.critical << "starting selector mode thread" << std::endl;
-               theThread = new std::thread(std::ref(*mode));
-               log << log.critical << "selector mode thread started" << std::endl;
+               StartSelectorMode();
 
                needRelease = true;
 
@@ -188,7 +178,7 @@ void stoplightd::run()
                   // ignore three loops to debounce
                   ignores = 3;
 
-                  dispatchmessages(mode, b2);
+                  DispatchMessages(mode, b2);
                }
 
                // change states
@@ -200,6 +190,9 @@ void stoplightd::run()
             if (mode->IsQuitting())
             {
                log << log.critical << "Quitting! waiting for mode thread ..." << std::endl;
+
+               mode->Shutdown();
+
                theThread->join();
                delete theThread;
                log << log.critical << "mode thread joined" << std::endl;
@@ -214,6 +207,8 @@ void stoplightd::run()
                   selectorMode = false;
                   log << log.critical << "returning to idle mode" << std::endl;
                   lights->AllOff();
+
+                  buzzer->ThreeBeeps();
                   continue;
                }
                else
@@ -229,6 +224,7 @@ void stoplightd::run()
                   theThread = new std::thread(std::ref(*mode));
                   log << log.critical << "selector mode thread started" << std::endl;
 
+                  buzzer->TwoBeeps();
                   continue;
                }
             }
@@ -255,12 +251,15 @@ void stoplightd::run()
                   log << log.critical << "idle mode" << std::endl;
                   lights->AllOff();
 
+                  buzzer->ThreeBeeps();
                }
                else
                {
 
                   log << log.critical << "starting new mode thread" << std::endl;
                   theThread = new std::thread(std::ref(*mode));
+
+                  buzzer->TwoBeeps();
                }
 
                selectorMode = false;
@@ -268,10 +267,9 @@ void stoplightd::run()
          }
       }
 
-      // sleep 100 ms between tests
+      // sleep 50 ms between tests
       using namespace std::chrono_literals;
-      std::this_thread::sleep_for(100ms);
+      std::this_thread::sleep_for(50ms);
    }
 }
-
 

@@ -1,8 +1,7 @@
 
-
-
-
 #pragma once
+
+#include <thread>
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
@@ -13,7 +12,7 @@
 
 #include "buttons.h"
 #include "lights.h"
-#include "buzzer.h"
+#include "smartbuzzer.h"
 
 
 class stoplightd : public daemonize::daemon
@@ -21,10 +20,14 @@ class stoplightd : public daemonize::daemon
 
    Lights* lights;
    Buttons* buttons;
-   Buzzer* buzzer;
+   SmartBuzzer* buzzer;
 
-   int buzzticks;
    struct gpiod_chip* chip;
+
+   ModeInterface* mode;
+   bool selectorMode;
+   bool needRelease;
+   std::thread* theThread;
 
 public:
    stoplightd(daemonize::logger& log);
@@ -39,9 +42,10 @@ public:
    virtual void run() override;
 
 private:
-   void dispatchmessages(ModeInterface* mode, Buttons& b2);
-};
+   void DispatchMessages(ModeInterface* mode, Buttons& b2);
 
+   void StartSelectorMode();
+};
 
 
 
