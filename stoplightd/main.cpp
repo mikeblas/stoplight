@@ -3,6 +3,7 @@
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
+#include <daemonize/signals.hpp>
 
 #include "stoplightd.h"
 
@@ -10,6 +11,7 @@ int main(int /* argc */, const char** /* argv */)
 {
 
    daemonize::syslog syslog("stoplightd");
+   daemonize::signals::enable(&syslog);
 
    try
    {

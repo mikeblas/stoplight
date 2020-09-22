@@ -34,6 +34,13 @@ public:
 
    ~stoplightd()
    {
+      log << log.notice << "stoplightd dtor: ";
+      if (lights == nullptr)
+         log << log.notice << "lights is null" << std::endl;
+      else
+         log << log.notice << "lights is not null" << std::endl;
+
+
       delete lights;
       delete buttons;
       delete buzzer;

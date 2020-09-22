@@ -32,7 +32,7 @@ stoplightd::stoplightd(daemonize::logger& log)
      selectorMode(false), needRelease(false),
      theThread(nullptr)
 {
-   log << log.critical << "entered run function" << std::endl;
+   log << log.critical << "stoplightd ctor" << std::endl;
 
    log << log.critical << "gpiod version: " << gpiod_version_string() << std::endl;
 
@@ -42,7 +42,8 @@ stoplightd::stoplightd(daemonize::logger& log)
    if (chip == nullptr)
    {
       log << log.critical << "Open chip failed" << std::endl;
-      exit(1);
+      throw 1;
+
    }
    else
    {
@@ -51,7 +52,6 @@ stoplightd::stoplightd(daemonize::logger& log)
       buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
 
       lights->AllOff();
-      daemonize::signals::enable(&log);
    }
 }
 
@@ -116,6 +116,8 @@ void stoplightd::StartSelectorMode()
 
 void stoplightd::run()
 {
+   log << log.critical << "stoplightd run function" << std::endl;
+
    int ignores = 0;
 
    lights->AllOff();

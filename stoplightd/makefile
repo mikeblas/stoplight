@@ -11,7 +11,7 @@ stoplightd: stoplightd.o regularlightmode.o selectormode.o main.o remomode.o
 main.o: main.cpp stoplightd.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h
+stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
