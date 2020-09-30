@@ -1,6 +1,6 @@
 
-CXX      := g++
-CXXFLAGS := -Wall -Wextra -I /usr/include/libdaemonize-1.0
+# CXX      := g++
+CXXFLAGS ?= -Wall -Wextra -I /usr/include/libdaemonize-1.0 -g -Wa,-adhln=$*.s
 LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
 
 all: stoplightd
@@ -12,7 +12,7 @@ main.o: main.cpp stoplightd.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $< 
 
 regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

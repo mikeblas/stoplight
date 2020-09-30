@@ -11,7 +11,7 @@ public:
    Buzzer(const char* clientname, struct gpiod_chip* chip)
    {
 
-      lineBuzz = gpiod_chip_get_line(chip, 25);
+      lineBuzz = gpiod_chip_get_line(chip, 18); // was 25
       gpiod_line_request_output(lineBuzz, clientname, 0);
    }
 
