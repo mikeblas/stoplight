@@ -3,6 +3,7 @@
 #include "regularlightmode.h"
 #include "selectormode.h"
 #include "remomode.h"
+#include "flickermode.h"
 
 class ModeFactory
 {
@@ -23,6 +24,10 @@ public:
 
          case 2:
             p = new RemoMode(lights, log);
+            break;
+
+         case 3:
+            p = new FlickerMode(lights, log);
             break;
 
          default:

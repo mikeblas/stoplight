@@ -16,9 +16,6 @@
 #include "buttons.h"
 #include "buzzer.h"
 
-#include "regularlightmode.h"
-#include "selectormode.h"
-
 #include "stoplightd.h"
 
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
