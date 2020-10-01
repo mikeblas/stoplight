@@ -3,24 +3,26 @@
 CXXFLAGS ?= -Wall -Wextra -I /usr/include/libdaemonize-1.0 -g -Wa,-adhln=$*.s
 LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
 
+OBJDIR   := obj
+
 all: stoplightd
 
-stoplightd: stoplightd.o regularlightmode.o selectormode.o main.o remomode.o
+stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o
 	$(CXX) $(CXXFLAGS)  -o $@  $^ $(LDFLAGS)
 
-main.o: main.cpp stoplightd.h
+$(OBJDIR)/main.o: main.cpp stoplightd.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
-
-regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
+$(OBJDIR)/stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-selectormode.o: selectormode.cpp selectormode.h lights.h modeinterface.h
+$(OBJDIR)/regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-remomode.o: remomode.cpp remomode.h lights.h modeinterface.h
+$(OBJDIR)/selectormode.o: selectormode.cpp selectormode.h lights.h modeinterface.h
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/remomode.o: remomode.cpp remomode.h lights.h modeinterface.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 
@@ -34,9 +36,12 @@ release: all
 
 
 clean:
-	-rm -f stoplightd.o
+	-rm -f $(OBJDIR)/stoplightd.o
+	-rm -f $(OBJDIR)/stoplightd
+	-rm -f $(OBJDIR)/regularlightmode.o
+	-rm -f $(OBJDIR)/selectormode.o
+	-rm -f $(OBJDIR)main.o
 	-rm -f stoplightd
-	-rm -f regularlightmode.o
-	-rm -f selectormode.o
-	-rm -f main.o
+
+
 
