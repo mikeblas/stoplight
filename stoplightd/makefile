@@ -1,11 +1,22 @@
 
-# CXX      := g++
-CXXFLAGS ?= -Wall -Wextra -I /usr/include/libdaemonize-1.0 -g -Wa,-adhln=$*.s
+OBJDIR   := obj
+LISTDIR  := lst
+
+CXXFLAGS ?= -Wall -Wextra -I /usr/include/libdaemonize-1.0 -g -Wa,-adhln=$(LISTDIR)/$(notdir $*).s
 LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
 
-OBJDIR   := obj
 
-all: stoplightd
+.PHONY: clean directories
+
+all: directories stoplightd
+
+directories: $(OBJDIR) $(LISTDIR)
+
+$(OBJDIR):
+	-mkdir $(OBJDIR)
+
+$(LISTDIR):
+	-mkdir $(LISTDIR)
 
 stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o
 	$(CXX) $(CXXFLAGS)  -o $@  $^ $(LDFLAGS)
@@ -34,7 +45,6 @@ release: CXXFLAGS += -O2
 release: all
 
 
-
 clean:
 	-rm -f $(OBJDIR)/stoplightd.o
 	-rm -f $(OBJDIR)/stoplightd
@@ -42,6 +52,6 @@ clean:
 	-rm -f $(OBJDIR)/selectormode.o
 	-rm -f $(OBJDIR)main.o
 	-rm -f stoplightd
-
+	-rm -rf $(OBJDIR) $(LISTDIR)
 
 

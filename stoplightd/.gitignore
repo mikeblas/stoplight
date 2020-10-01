@@ -1,6 +1,7 @@
 stoplightd
 stoplightdpid
-*.o
-*.s
+obj/
+lst/
+
 
 
