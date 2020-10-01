@@ -34,6 +34,9 @@ public:
       gpiod_line_request_output(lineRed, clientname, 0);
       gpiod_line_request_output(lineYellow, clientname, 0);
       gpiod_line_request_output(lineGreen, clientname, 0);
+
+      gpiod_line_request_output(lineInd1, clientname, 0);
+      gpiod_line_request_output(lineInd2, clientname, 0);
    }
 
    void AllOff()
