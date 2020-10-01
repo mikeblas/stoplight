@@ -15,6 +15,7 @@ void RegularLightMode::operator()()
    {
 
       std::unique_lock<std::mutex> lck(mtx);
+      reloop = false;
 
       switch (state)
       {
@@ -23,9 +24,8 @@ void RegularLightMode::operator()()
             lights.AllOff();
             lights.SetRed(1);
             log << log.critical << "Switched to red" << std::endl;
-            if (cond.wait_for(lck, 4s) != std::cv_status::timeout)
+            if (cond.wait_for(lck, std::chrono::milliseconds(redTimeMilliseconds)) != std::cv_status::timeout)
             {
-               quitting = true;
                log << log.critical << "Signalled!!" << std::endl;
             }
             break;
@@ -35,9 +35,8 @@ void RegularLightMode::operator()()
             lights.AllOff();
             lights.SetYellow(1);
             log << log.critical << "Switched to yellow" << std::endl;
-            if (cond.wait_for(lck, 2s) != std::cv_status::timeout)
+            if (cond.wait_for(lck, std::chrono::milliseconds(yellowTimeMilliseconds)) != std::cv_status::timeout)
             {
-               quitting = true;
                log << log.critical << "Signalled!!" << std::endl;
             }
             break;
@@ -47,9 +46,8 @@ void RegularLightMode::operator()()
             lights.AllOff();
             lights.SetGreen(1);
             log << log.critical << "Switched to green" << std::endl;
-            if (cond.wait_for(lck, 8s) != std::cv_status::timeout)
+            if (cond.wait_for(lck, std::chrono::milliseconds(greenTimeMilliseconds)) != std::cv_status::timeout)
             {
-               quitting = true;
                log << log.critical << "Signalled!!" << std::endl;
             }
             break;
@@ -57,4 +55,17 @@ void RegularLightMode::operator()()
    }
 }
 
+void RegularLightMode::SetFromMultiplier()
+{
+
+   redTimeMilliseconds = 2000 * multiplier;
+   yellowTimeMilliseconds = 1000 * multiplier;
+   greenTimeMilliseconds = 4000 * multiplier;
+
+   // set the lock to reloop to new timing
+   std::lock_guard<std::mutex> lk(mtx);
+   cond.notify_one();
+
+   reloop = true;
+}
 
