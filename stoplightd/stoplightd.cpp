@@ -20,36 +20,36 @@
 
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 
-
+static const char* chipname = "gpiochip0";
 
 stoplightd::stoplightd(daemonize::logger& log)
    : daemon(log, "stoplightdpid", "/home/pi/"),
      lights(nullptr), buttons(nullptr), buzzer(nullptr),
      chip(nullptr), mode(nullptr),
      selectorMode(false), needRelease(false),
+     runner(false),
      theThread(nullptr)
 {
    log << log.critical << "stoplightd ctor" << std::endl;
-
    log << log.critical << "gpiod version: " << gpiod_version_string() << std::endl;
+}
 
-   static const char* chipname = "gpiochip0";
-
+void stoplightd::SetupRunner()
+{
    chip = gpiod_chip_open_by_name(chipname);
+
    if (chip == nullptr)
    {
       log << log.critical << "Open chip failed" << std::endl;
       throw 1;
-
    }
-   else
-   {
-      lights = new Lights(STOPLIGHT_CLIENT, chip);
-      buttons = new Buttons(STOPLIGHT_CLIENT, chip);
-      buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
 
-      lights->AllOff();
-   }
+   lights = new Lights(STOPLIGHT_CLIENT, chip);
+   buttons = new Buttons(STOPLIGHT_CLIENT, chip);
+   buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
+
+   lights->AllOff();
+   runner = true;
 }
 
 
@@ -115,9 +115,9 @@ void stoplightd::run()
 {
    log << log.critical << "stoplightd run function" << std::endl;
 
-   int ignores = 0;
+   SetupRunner();
 
-   lights->AllOff();
+   int ignores = 0;
 
    // get the lines, and get started!
    buttons->ReadLines();
