@@ -54,8 +54,5 @@ public:
    }
 
    virtual void operator()() override;
-
-private:
-   void UpdateLights();
 };
 
