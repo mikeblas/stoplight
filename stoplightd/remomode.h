@@ -32,7 +32,7 @@ public:
 
    virtual ButtonResult OnBButtonReleased() override
    {
-      log << log.critical << "RemorMode: BButtonReleased" << std::endl;
+      log << log.critical << "RemoMode: BButtonReleased" << std::endl;
       lights.ToggleYellow();
       return NOTHING;
    }

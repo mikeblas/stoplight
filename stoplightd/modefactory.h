@@ -4,6 +4,7 @@
 #include "selectormode.h"
 #include "remomode.h"
 #include "flickermode.h"
+#include "clockmode.h"
 
 class ModeFactory
 {
@@ -28,6 +29,10 @@ public:
 
          case 3:
             p = new FlickerMode(lights, log);
+            break;
+
+         case 4:
+            p = new ClockMode(lights, log);
             break;
 
          default:
