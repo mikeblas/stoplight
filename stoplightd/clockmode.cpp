@@ -31,6 +31,7 @@ void ClockMode::operator()()
       WorkLight(Lights::LIGHT_YELLOW, &yellowTimeMilliseconds);
       WorkLight(Lights::LIGHT_GREEN, &greenTimeMilliseconds);
 
+
       if (cond.wait_for(lck, std::chrono::milliseconds(100)) != std::cv_status::timeout)
       {
          log << log.critical << "Signalled!" << std::endl;
@@ -47,12 +48,44 @@ void ClockMode::operator()()
             lights.ToggleInd1();
          }
 
-         if (now->tm_sec == 0 && lastBeepMinute != now->tm_min)
+         if (now->tm_sec == 0 && lastBeepMinute != now->tm_sec)
          {
-//            buzzer->OneBeep();
-            lastBeepMinute = now->tm_min;
+            buzzer.FourBeeps();
+            lastBeepMinute = now->tm_sec;
+            redTimeMilliseconds = 2000;
+            greenTimeMilliseconds = 2000;
+            yellowTimeMilliseconds = 2000;
+            lights.SetRed(1);
+            lights.SetGreen(1);
+            lights.SetYellow(1);
+         }
+
+         if (now->tm_sec == 15 && lastBeepMinute != now->tm_sec)
+         {
+            buzzer.OneBeep();
+            lastBeepMinute = now->tm_sec;
             redTimeMilliseconds = 1000;
             lights.SetRed(1);
+         }
+
+         if (now->tm_sec == 30 && lastBeepMinute != now->tm_sec)
+         {
+            buzzer.TwoBeeps();
+            lastBeepMinute = now->tm_sec;
+            redTimeMilliseconds = 1000;
+            greenTimeMilliseconds = 1000;
+            lights.SetRed(1);
+            lights.SetGreen(1);
+         }
+
+         if (now->tm_sec == 45 && lastBeepMinute != now->tm_sec)
+         {
+            buzzer.ThreeBeeps();
+            lastBeepMinute = now->tm_sec;
+            redTimeMilliseconds = 1000;
+            yellowTimeMilliseconds = 1000;
+            lights.SetRed(1);
+            lights.SetYellow(1);
          }
 
       }

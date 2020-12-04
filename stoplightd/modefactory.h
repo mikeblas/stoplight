@@ -9,7 +9,7 @@
 class ModeFactory
 {
 public:
-   static ModeInterface* FromModeNumber(int n, Lights& lights, daemonize::logger& log)
+   static ModeInterface* FromModeNumber(int n, Lights& lights, SmartBuzzer& buzzer, daemonize::logger& log)
    {
       ModeInterface* p = nullptr;
 
@@ -32,7 +32,7 @@ public:
             break;
 
          case 4:
-            p = new ClockMode(lights, log);
+            p = new ClockMode(lights, buzzer, log);
             break;
 
          default:

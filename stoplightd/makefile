@@ -24,7 +24,7 @@ stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/select
 $(OBJDIR)/main.o: main.cpp stoplightd.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
-$(OBJDIR)/stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h modefactory.h modeinterface.h
+$(OBJDIR)/stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h modefactory.h modeinterface.h clockmode.h selectormode.h remomode.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
 $(OBJDIR)/regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h

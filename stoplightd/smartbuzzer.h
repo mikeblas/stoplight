@@ -13,6 +13,8 @@ class SmartBuzzer : public Buzzer
       TWO_BEEPS_ON,
       THREE_BEEPS_OFF,
       THREE_BEEPS_ON,
+      FOUR_BEEPS_OFF,
+      FOUR_BEEPS_ON,
    };
 
    State currentState = IDLE;
@@ -36,6 +38,13 @@ public:
             ChooseNewState();
          SetBuzzer();
       }
+   }
+
+   void FourBeeps()
+   {
+      currentState = FOUR_BEEPS_ON;
+      ticksLeft = halfDurationTicks;
+      SetBuzzer();
    }
 
    void ThreeBeeps()
@@ -70,6 +79,7 @@ protected:
          case IDLE:
          case TWO_BEEPS_OFF:
          case THREE_BEEPS_OFF:
+         case FOUR_BEEPS_OFF:
          default:
             Off();
             break;
@@ -77,6 +87,7 @@ protected:
          case TWO_BEEPS_ON:
          case ONE_BEEP_ON:
          case THREE_BEEPS_ON:
+         case FOUR_BEEPS_ON:
             On();
             break;
       }
@@ -99,6 +110,11 @@ protected:
             ticksLeft = halfDurationTicks;
             break;
 
+         case FOUR_BEEPS_OFF:
+            currentState = THREE_BEEPS_ON;
+            ticksLeft = halfDurationTicks;
+            break;
+
          case TWO_BEEPS_ON:
             currentState = TWO_BEEPS_OFF;
             ticksLeft = halfDurationTicks;
@@ -111,6 +127,11 @@ protected:
 
          case THREE_BEEPS_ON:
             currentState = THREE_BEEPS_OFF;
+            ticksLeft = halfDurationTicks;
+            break;
+
+         case FOUR_BEEPS_ON:
+            currentState = FOUR_BEEPS_OFF;
             ticksLeft = halfDurationTicks;
             break;
       }

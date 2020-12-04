@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "modeinterface.h"
+#include "smartbuzzer.h"
 
 class ClockMode : public ModeInterface
 {
@@ -12,6 +13,8 @@ class ClockMode : public ModeInterface
 
    int lastBeepMinute;
 
+   SmartBuzzer& buzzer;
+
    void WorkLight(Lights::LightLine light, int* millisRemaining);
 
    int redTimeMilliseconds;
@@ -19,8 +22,8 @@ class ClockMode : public ModeInterface
    int greenTimeMilliseconds;
 
 public:
-   ClockMode(Lights& lights, daemonize::logger& log)
-      : ModeInterface(lights, log), lastBeepMinute(-1)
+   ClockMode(Lights& lights, SmartBuzzer& _buzzer, daemonize::logger& log)
+      : ModeInterface(lights, log), lastBeepMinute(-1), buzzer(_buzzer)
    {
    }
 

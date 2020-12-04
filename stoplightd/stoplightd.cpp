@@ -101,7 +101,7 @@ void stoplightd::DispatchMessages(ModeInterface* mode, Buttons& b2)
 void stoplightd::StartSelectorMode()
 {
 
-   mode = ModeFactory::FromModeNumber(0, *lights, log);
+   mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
    selectorMode = true;
 
    log << log.critical << "starting selector mode thread" << std::endl;
@@ -127,6 +127,7 @@ void stoplightd::run()
    {
 
       buzzer->Advance();
+      log << log.critical << "Main loop advanced" << std::endl;
 
       if (ignores > 0)
       {
@@ -218,7 +219,7 @@ void stoplightd::run()
                   log << log.critical << "returning to selector mode" << std::endl;
 
                   // enter selector mode
-                  mode = ModeFactory::FromModeNumber(0, *lights, log);
+                  mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
                   selectorMode = true;
 
                   log << log.critical << "starting selector mode thread" << std::endl;
@@ -238,7 +239,7 @@ void stoplightd::run()
                mode->Shutdown();
                delete mode;
 
-               mode = ModeFactory::FromModeNumber(newMode + 1, *lights, log);
+               mode = ModeFactory::FromModeNumber(newMode + 1, *lights, *buzzer, log);
 
                if (mode == nullptr)
                {
