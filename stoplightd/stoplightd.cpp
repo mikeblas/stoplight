@@ -14,7 +14,6 @@
 
 #include "lights.h"
 #include "buttons.h"
-#include "buzzer.h"
 
 #include "stoplightd.h"
 

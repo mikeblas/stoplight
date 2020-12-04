@@ -140,6 +140,45 @@ public:
       }
    }
 
+
+   void OffNum(enum LightLine light)
+   {
+      SetNum(light, 0);
+   }
+
+   void OnNum(enum LightLine light)
+   {
+      SetNum(light, 1);
+   }
+
+
+   void SetNum(enum LightLine light, int state)
+   {
+
+      switch (light)
+      {
+         case LIGHT_RED:
+            SetRed(state);
+            break;
+
+         case LIGHT_GREEN:
+            SetGreen(state);
+            break;
+
+         case LIGHT_YELLOW:
+            SetYellow(state);
+            break;
+
+         case LIGHT_IND_1:
+            SetInd1(state);
+            break;
+
+         case LIGHT_IND_2:
+            SetInd2(state);
+            break;
+      }
+   }
+
    void FlickAll(int count, int millis) {
 
       AllOff();
