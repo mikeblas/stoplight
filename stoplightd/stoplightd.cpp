@@ -127,7 +127,8 @@ void stoplightd::run()
    {
 
       buzzer->Advance();
-      log << log.critical << "Main loop advanced" << std::endl;
+      // log << log.critical << "Main loop advanced" << std::endl;
+      lights->ToggleInd2();
 
       if (ignores > 0)
       {
