@@ -48,6 +48,7 @@ void ClockMode::operator()()
             lights.ToggleInd1();
          }
 
+         // at the top, we flip everything and beep four
          if (now->tm_sec == 0 && lastBeepMinute != now->tm_sec)
          {
             buzzer.FourBeeps();
@@ -60,6 +61,7 @@ void ClockMode::operator()()
             lights.SetYellow(1);
          }
 
+         // at 15, we flip only red with just one beep
          if (now->tm_sec == 15 && lastBeepMinute != now->tm_sec)
          {
             buzzer.OneBeep();
@@ -68,24 +70,22 @@ void ClockMode::operator()()
             lights.SetRed(1);
          }
 
+         // at 30, we flip yellow with two beeps
          if (now->tm_sec == 30 && lastBeepMinute != now->tm_sec)
          {
             buzzer.TwoBeeps();
             lastBeepMinute = now->tm_sec;
-            redTimeMilliseconds = 1000;
-            greenTimeMilliseconds = 1000;
-            lights.SetRed(1);
-            lights.SetGreen(1);
+            yellowTimeMilliseconds = 1000;
+            lights.SetYellow(1);
          }
 
+         // at 45, we flip green with three beeps
          if (now->tm_sec == 45 && lastBeepMinute != now->tm_sec)
          {
             buzzer.ThreeBeeps();
             lastBeepMinute = now->tm_sec;
-            redTimeMilliseconds = 1000;
-            yellowTimeMilliseconds = 1000;
-            lights.SetRed(1);
-            lights.SetYellow(1);
+            greenTimeMilliseconds = 1000;
+            lights.SetGreen(1);
          }
 
       }
