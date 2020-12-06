@@ -12,11 +12,10 @@ class ClockComparitor
    int lastComparisonUnit;
 
 public:
-   ClockComparitor(bool mode) 
+   ClockComparitor(bool mode)
    :  minutes_mode{mode}, lastComparisonUnit{-1}
    {
    }
-
 
    bool Compare(int offset, std::tm* tm)
    {
@@ -30,20 +29,20 @@ public:
 
       return false;
    }
-
-
 };
 
 
 void ClockMode::WorkLight(Lights::LightLine light, int* millisRemaining)
 {
-   if (*millisRemaining <= 0)
+   if (*millisRemaining < 0)
    {
       lights.OffNum(light);
    }
    else
    {
       *millisRemaining -= 100;
+      if (*millisRemaining % 500 == 0)
+         lights.Toggle(light);
    }
 }
 
@@ -51,19 +50,19 @@ void ClockMode::operator()()
 {
    log << log.critical << "ClockMode starting" << std::endl;
    lights.AllOff();
+   bool noisy = false;
 
    using namespace std::chrono_literals;
    std::unique_lock<std::mutex> lck(mtx);
 
    int lastIndicatorSecond = -1;
-   ClockComparitor comparitor(false);
+   ClockComparitor comparitor(true);  // true == minute mode (slow)
 
    while (!quitting)
    {
       WorkLight(Lights::LIGHT_RED, &redTimeMilliseconds);
       WorkLight(Lights::LIGHT_YELLOW, &yellowTimeMilliseconds);
       WorkLight(Lights::LIGHT_GREEN, &greenTimeMilliseconds);
-
 
       if (cond.wait_for(lck, std::chrono::milliseconds(100)) != std::cv_status::timeout)
       {
@@ -84,10 +83,11 @@ void ClockMode::operator()()
          // at the top, we flip everything and beep four
          if (comparitor.Compare(0, now))
          {
-            buzzer.FourBeeps();
-            redTimeMilliseconds = 2000;
-            greenTimeMilliseconds = 2000;
-            yellowTimeMilliseconds = 2000;
+            if (noisy)
+               buzzer.FourBeeps();
+            redTimeMilliseconds = 5000;
+            greenTimeMilliseconds = 5000;
+            yellowTimeMilliseconds = 5000;
             lights.SetRed(1);
             lights.SetGreen(1);
             lights.SetYellow(1);
@@ -96,7 +96,8 @@ void ClockMode::operator()()
          // at 15, we flip only red with just one beep
          if (comparitor.Compare(15, now))
          {
-            buzzer.OneBeep();
+            if (noisy)
+               buzzer.OneBeep();
             redTimeMilliseconds = 1000;
             lights.SetRed(1);
          }
@@ -104,15 +105,17 @@ void ClockMode::operator()()
          // at 30, we flip yellow with two beeps
          if (comparitor.Compare(30, now))
          {
-            buzzer.TwoBeeps();
-            yellowTimeMilliseconds = 1000;
+            if (noisy)
+               buzzer.TwoBeeps();
+            yellowTimeMilliseconds = 3000;
             lights.SetYellow(1);
          }
 
          // at 45, we flip green with three beeps
          if (comparitor.Compare(45, now))
          {
-            buzzer.ThreeBeeps();
+            if (noisy)
+               buzzer.ThreeBeeps();
             greenTimeMilliseconds = 1000;
             lights.SetGreen(1);
          }

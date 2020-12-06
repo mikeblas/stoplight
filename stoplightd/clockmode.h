@@ -11,8 +11,6 @@ class ClockMode : public ModeInterface
    std::condition_variable cond;
    std::mutex mtx;
 
-   int lastBeepMinute;
-
    SmartBuzzer& buzzer;
 
    void WorkLight(Lights::LightLine light, int* millisRemaining);
@@ -23,7 +21,7 @@ class ClockMode : public ModeInterface
 
 public:
    ClockMode(Lights& lights, SmartBuzzer& _buzzer, daemonize::logger& log)
-      : ModeInterface(lights, log), lastBeepMinute(-1), buzzer(_buzzer)
+      : ModeInterface(lights, log), buzzer(_buzzer)
    {
    }
 
