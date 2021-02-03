@@ -43,6 +43,9 @@ $(OBJDIR)/flickermode.o: flickermode.cpp flickermode.h lights.h modeinterface.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
 
+install:
+	cp stoplightd.service /etc/systemd/system
+
 
 debug: CXXFLAGS += -DDEBUG -g
 debug: all

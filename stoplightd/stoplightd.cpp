@@ -22,7 +22,7 @@ static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 static const char* chipname = "gpiochip0";
 
 stoplightd::stoplightd(daemonize::logger& log)
-   : daemon(log, "stoplightdpid", "/home/pi/"),
+   : daemon(log, "/run/stoplightd.pid", "/home/pi/"),
      lights(nullptr), buttons(nullptr), buzzer(nullptr),
      chip(nullptr), mode(nullptr),
      selectorMode(false), needRelease(false),

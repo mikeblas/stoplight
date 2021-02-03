@@ -1,0 +1,16 @@
+[Unit]
+Description=StopLight service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=forking
+Restart=always
+RestartSec=1
+ExecStart=/home/pi/stoplight/stoplightd/stoplightd
+PIDFile=stoplightd.pid
+
+[Install]
+WantedBy=multi-user.target
+
+
