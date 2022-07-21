@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name 2020-09-07_17-03-09)(type Legacy)(uri ${KIPRJMOD}/2020-09-07_17-03-09.lib)(options "")(descr ""))
+  (lib (name "2020-09-07_17-03-09")(type "Legacy")(uri "${KIPRJMOD}/2020-09-07_17-03-09.lib")(options "")(descr ""))
+  (lib (name "StopLight4-rescue")(type "Legacy")(uri "${KIPRJMOD}/StopLight4-rescue.lib")(options "")(descr ""))
 )

@@ -1,0 +1,11 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ADA3708-ADA3708
+F MAnufactutrer Recommendations
+$ENDCMP
+#
+$CMP FS20-600-FS20-600
+F N/A
+$ENDCMP
+#
+#End Doc Library
