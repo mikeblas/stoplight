@@ -3,7 +3,7 @@
 
 The daemon runs the stoplight. It listens to the remote and blinks lights -- it's almost that simple!
 
-It logs, too, to syslog. And it can run the stoplight in a bunch if different modes. Since the remote is klunky and unreliable, and becaue the light only has a beeper and the three traffic lights, we have to be creative about UI.
+It logs, too, to syslog. And it can run the stoplight in a bunch if different modes. Since the remote is klunky and unreliable, and because the light only has a beeper and the three traffic lights, we have to be creative about UI.
 
 When the light is in **idle** mode, it is dark. It's not beeping, and all the lights are off. Idle mode can be exited with any button press; any button pres moves to **selection** mode.
 
@@ -54,8 +54,37 @@ This is how numbers are displayed:
  * D quits
 	
 	
-## Mode 6: Stock
+## Mode 6: Stock Ticker
+
+(Not yet implemented.)
 
 
+## Mode 7: Weather
+
+(Not yet implemented.)
 
 
+# Building
+
+This project requires [libdaemonize](https://github.com/Aethelflaed/libdaemonize) and gpiod.
+
+## libdaemonize
+
+1. Clone the `libdaemonize` project from git.
+2. It requires `libtool` to get working, so install that with `sudo apt install libtool -y`
+3. In the `libdaemonize` root directory, run these commands:  
+```
+libtoolize
+aclocal
+autoconf
+automake --add-missing
+```
+4. Now, the library can be configured and built:
+```
+./configure --prefix=/usr
+make
+```
+5. And finally installed, so that the library and its headers are readable.
+```
+sudo make install
+```
