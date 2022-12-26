@@ -88,3 +88,21 @@ make
 ```
 sudo make install
 ```
+
+## libgpiod
+
+The code needs `libgpiod` to communicate with the Raspberry Pi GPIO. It can be installed easily:
+
+```
+sudo apt install libgpiod-dev -y
+``` 
+
+
+## Actually building
+
+With the dependencies installed and built, the project itself can be built:
+
+```
+make clean all
+```
+
