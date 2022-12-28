@@ -8,6 +8,11 @@
 #include <daemonize/syslog.hpp>
 #include <daemonize/signals.hpp>
 
+#include <civetweb.h>
+// not installed by CivetWeb's make; see issue #1118
+// https://github.com/civetweb/civetweb/issues/1118
+#include "CivetServer.h"
+
 #include "modeinterface.h"
 
 #include "modefactory.h"
@@ -17,38 +22,63 @@
 
 #include "stoplightd.h"
 
+
 static const char* STOPLIGHT_CLIENT = "stoplight_remo";
 
 static const char* chipname = "gpiochip0";
 
 stoplightd::stoplightd(daemonize::logger& log)
-   : daemon(log, "/run/stoplightd.pid", "/home/pi/"),
-     lights(nullptr), buttons(nullptr), buzzer(nullptr),
-     chip(nullptr), mode(nullptr),
-     selectorMode(false), needRelease(false),
-     runner(false),
-     theThread(nullptr)
+    : daemon(log, "/run/stoplightd.pid", "/home/pi/"),
+      lights(nullptr), buttons(nullptr), buzzer(nullptr),
+      chip(nullptr), mode(nullptr),
+      selectorMode(false), needRelease(false),
+      runner(false),
+      theThread(nullptr),
+      startTime(std::chrono::system_clock::now()),
+      h_stats(*this)
 {
-   log << log.critical << "stoplightd ctor" << std::endl;
-   log << log.critical << "gpiod version: " << gpiod_version_string() << std::endl;
+    log << log.critical << "stoplightd ctor" << std::endl;
+    log << log.critical << "gpiod version: " << gpiod_version_string() << std::endl;
 }
 
 void stoplightd::SetupRunner()
 {
-   chip = gpiod_chip_open_by_name(chipname);
+    // connect to the GPIO chip
+    chip = gpiod_chip_open_by_name(chipname);
+    if (chip == nullptr)
+    {
+       log << log.critical << "Open chip failed" << std::endl;
+       throw 1;
+    }
 
-   if (chip == nullptr)
-   {
-      log << log.critical << "Open chip failed" << std::endl;
-      throw 1;
-   }
+    // create light objects and then turn them all off
+    lights = new Lights(STOPLIGHT_CLIENT, chip);
+    buttons = new Buttons(STOPLIGHT_CLIENT, chip);
+    buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
+    lights->AllOff();
 
-   lights = new Lights(STOPLIGHT_CLIENT, chip);
-   buttons = new Buttons(STOPLIGHT_CLIENT, chip);
-   buzzer = new SmartBuzzer(STOPLIGHT_CLIENT, chip);
+    // initialize the web server library
+    mg_init_library(0);
 
-   lights->AllOff();
-   runner = true;
+    const char* options[] = {
+       "document_root",     ".",
+       "listening_ports",   "80",
+       nullptr };
+
+    std::vector<std::string> cpp_options;
+    for (size_t i = 0; i < (sizeof(options) / sizeof(options[0]) - 1); i++)
+    {
+        cpp_options.push_back(options[i]);
+    }
+
+    server = new CivetServer(cpp_options);
+
+    // load the handlers
+    server->addHandler("/example", h_ex);
+    server->addHandler("/stats", h_stats);
+
+    // ready to run!
+    runner = true;
 }
 
 
@@ -100,13 +130,12 @@ void stoplightd::DispatchMessages(ModeInterface* mode, Buttons& b2)
 
 void stoplightd::StartSelectorMode()
 {
+    mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
+    selectorMode = true;
 
-   mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
-   selectorMode = true;
-
-   log << log.critical << "starting selector mode thread" << std::endl;
-   theThread = new std::thread(std::ref(*mode));
-   log << log.critical << "selector mode thread started" << std::endl;
+    log << log.critical << "starting selector mode thread" << std::endl;
+    theThread = new std::thread(std::ref(*mode));
+    log << log.critical << "selector mode thread started" << std::endl;
 }
 
 
@@ -125,7 +154,6 @@ void stoplightd::run()
    // loop until we quit ...
    while (true)
    {
-
       buzzer->Advance();
       // log << log.critical << "Main loop advanced" << std::endl;
       lights->ToggleInd2();
@@ -136,7 +164,6 @@ void stoplightd::run()
       }
       else
       {
-
          Buttons b2(STOPLIGHT_CLIENT, chip);
          b2.ReadLines();
 
@@ -173,7 +200,6 @@ void stoplightd::run()
                }
                else
                {
-
                   // yes! print out the flags
                   buttons->LogState(log, "B1");
                   b2.LogState(log, "B2");

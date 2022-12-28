@@ -4,6 +4,70 @@
 
 #include <unistd.h>
 
+#include <unordered_map>
+#include <chrono>
+
+using namespace std::chrono;
+
+static milliseconds GetNowMillis()
+{
+    milliseconds ms = duration_cast< milliseconds > (
+        system_clock::now().time_since_epoch()
+    );
+    return ms;
+}
+
+
+
+struct OnOffCounter {
+    OnOffCounter(milliseconds startedMillis)
+    :   timeOnMillis(0),
+        timeOffMillis(0),
+        stateStartedTime(startedMillis),
+        currentState(0)
+    {
+    }
+
+    OnOffCounter(const OnOffCounter& other)
+    :   timeOnMillis(other.timeOnMillis),
+        timeOffMillis(other.timeOffMillis),
+        stateStartedTime(other.stateStartedTime),
+        currentState(other.currentState)
+    {
+    }
+
+    constexpr OnOffCounter& operator=(const OnOffCounter&) = default;
+
+    OnOffCounter()
+    :   timeOnMillis(0),
+        timeOffMillis(0),
+        stateStartedTime(0),
+        currentState(0)
+    {
+    }
+
+    // change the state we reprsent, accumulating the time
+    void UpdateState(int state)
+    {
+      if (currentState != state)
+      {
+          milliseconds now = GetNowMillis();
+          long diff = (now - stateStartedTime).count();
+          if (currentState)
+              timeOnMillis += diff;
+          else
+              timeOffMillis += diff;
+          stateStartedTime = now;
+          currentState = state;
+      }
+    }
+
+    long timeOnMillis;
+    long timeOffMillis;
+    milliseconds stateStartedTime;
+    int currentState;
+};
+
 class Lights {
 
     struct gpiod_line* lineRed;
@@ -22,10 +86,15 @@ public:
       LIGHT_IND_2,
    };
 
+protected:
+    std::unordered_map<LightLine, OnOffCounter> timingMap;
+
+
+public:
    Lights(const char* clientname, struct gpiod_chip* chip)
    {
-      lineRed  = gpiod_chip_get_line(chip, 21);
-      lineYellow  = gpiod_chip_get_line(chip, 20);
+      lineRed    = gpiod_chip_get_line(chip, 21);
+      lineYellow = gpiod_chip_get_line(chip, 20);
       lineGreen  = gpiod_chip_get_line(chip, 16);
 
       lineInd1 = gpiod_chip_get_line(chip, 12);
@@ -37,6 +106,19 @@ public:
 
       gpiod_line_request_output(lineInd1, clientname, 0);
       gpiod_line_request_output(lineInd2, clientname, 0);
+
+      milliseconds now = GetNowMillis();
+
+      timingMap[LIGHT_RED   ] = OnOffCounter(now);
+      timingMap[LIGHT_GREEN ] = OnOffCounter(now);
+      timingMap[LIGHT_YELLOW] = OnOffCounter(now);
+      timingMap[LIGHT_IND_1 ] = OnOffCounter(now);
+      timingMap[LIGHT_IND_2 ] = OnOffCounter(now);
+   }
+
+   const OnOffCounter& GetLightCounter(Lights::LightLine line)
+   {
+      return timingMap[line];
    }
 
    void AllOff()
@@ -62,26 +144,31 @@ public:
    void SetRed(int state)
    {
       gpiod_line_set_value(lineRed, state);
+      timingMap[LIGHT_RED].UpdateState(state);
    }
 
    void SetYellow(int state)
    {
       gpiod_line_set_value(lineYellow, state);
+      timingMap[LIGHT_YELLOW].UpdateState(state);
    }
 
    void SetGreen(int state)
    {
       gpiod_line_set_value(lineGreen, state);
+      timingMap[LIGHT_GREEN].UpdateState(state);
    }
 
    void SetInd1(int state)
    {
       gpiod_line_set_value(lineInd1, state);
+      timingMap[LIGHT_IND_1].UpdateState(state);
    }
 
    void SetInd2(int state)
    {
       gpiod_line_set_value(lineInd2, state);
+      timingMap[LIGHT_IND_2].UpdateState(state);
    }
 
    void ToggleRed()
@@ -191,5 +278,3 @@ public:
       }
    }
 };
-
-

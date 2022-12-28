@@ -3,7 +3,7 @@ OBJDIR   := obj
 LISTDIR  := lst
 
 CXXFLAGS ?= -Wall -Wextra -I /usr/include/libdaemonize-1.0 -g -Wa,-adhln=$(LISTDIR)/$(notdir $*).s
-LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod
+LDFLAGS  := -L /usr/lib -l daemonize-1.0 -l pthread -l gpiod -l civetweb -ldl -lrt
 
 
 .PHONY: clean directories
@@ -18,13 +18,13 @@ $(OBJDIR):
 $(LISTDIR):
 	-mkdir $(LISTDIR)
 
-stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o $(OBJDIR)/flickermode.o $(OBJDIR)/clockmode.o
+stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o $(OBJDIR)/flickermode.o $(OBJDIR)/clockmode.o $(OBJDIR)/StatsHandler.o
 	$(CXX) $(CXXFLAGS)  -o $@  $^ $(LDFLAGS)
 
 $(OBJDIR)/main.o: main.cpp stoplightd.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
-$(OBJDIR)/stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h modefactory.h modeinterface.h clockmode.h selectormode.h remomode.h
+$(OBJDIR)/stoplightd.o: stoplightd.cpp lights.h buzzer.h buttons.h smartbuzzer.h stoplightd.h modefactory.h modeinterface.h clockmode.h selectormode.h remomode.h ExampleHandler.h StatsHandler.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
 $(OBJDIR)/regularlightmode.o: regularlightmode.cpp regularlightmode.h lights.h modeinterface.h
@@ -40,6 +40,9 @@ $(OBJDIR)/clockmode.o: clockmode.cpp clockmode.h lights.h modeinterface.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
 $(OBJDIR)/flickermode.o: flickermode.cpp flickermode.h lights.h modeinterface.h
+	$(CXX) $< -o $@ -c $(CXXFLAGS)
+
+$(OBJDIR)/StatsHandler.o: StatsHandler.cpp StatsHandler.h stoplightd.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
 

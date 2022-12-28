@@ -2,6 +2,7 @@
 #pragma once
 
 #include <thread>
+#include <chrono>
 
 #include <daemonize/daemonizer.hpp>
 #include <daemonize/syslog.hpp>
@@ -14,55 +15,77 @@
 #include "lights.h"
 #include "smartbuzzer.h"
 
+#include <civetweb.h>
+#include "CivetServer.h"
+
+#include "ExampleHandler.h"
+#include "StatsHandler.h"
+
 
 class stoplightd : public daemonize::daemon
 {
+    Lights* lights;
+    Buttons* buttons;
+    SmartBuzzer* buzzer;
 
-   Lights* lights;
-   Buttons* buttons;
-   SmartBuzzer* buzzer;
+    struct gpiod_chip* chip;
 
-   struct gpiod_chip* chip;
+    ModeInterface* mode;
+    bool selectorMode;
+    bool needRelease;
+    bool runner;
+    std::thread* theThread;
+    std::chrono::time_point<std::chrono::system_clock> startTime;
 
-   ModeInterface* mode;
-   bool selectorMode;
-   bool needRelease;
-   bool runner;
-   std::thread* theThread;
+    void SetupRunner();
 
-   void SetupRunner();
+    // web server
+    CivetServer* server;
+
+    // handlers
+    ExampleHandler h_ex;
+    StatsHandler h_stats;
 
 public:
-   stoplightd(daemonize::logger& log);
+    stoplightd(daemonize::logger& log);
 
-   ~stoplightd()
-   {
+    std::chrono::time_point<std::chrono::system_clock> GetStartTime()
+    {
+        return startTime;
+    }
 
-      if (!runner)
-      {
-         log << log.notice << "stoplightd dtor: not the runner" << std::endl;
-      }
-      else
-      {
-      log << log.notice << "stoplightd dtor: runner!" << std::endl;
+    const OnOffCounter& GetLightCounter(Lights::LightLine line)
+    {
+        return lights->GetLightCounter(line);
+    }
 
-         if (lights == nullptr)
-            log << log.notice << "lights is null" << std::endl;
-         else
-            log << log.notice << "lights is not null" << std::endl;
+    ~stoplightd()
+    {
+        if (!runner)
+            log << log.notice << "stoplightd dtor: not the runner" << std::endl;
+        else
+        {
+            log << log.notice << "stoplightd dtor: runner!" << std::endl;
 
-         delete lights;
-         delete buttons;
-         delete buzzer;
-      }
-   }
+            if (lights == nullptr)
+                log << log.notice << "lights is null" << std::endl;
+            else
+                log << log.notice << "lights is not null" << std::endl;
 
-   virtual void run() override;
+            delete lights;
+            delete buttons;
+            delete buzzer;
+
+            mg_exit_library();
+        }
+    }
+
+    virtual void run() override;
 
 private:
-   void DispatchMessages(ModeInterface* mode, Buttons& b2);
+    void DispatchMessages(ModeInterface* mode, Buttons& b2);
 
-   void StartSelectorMode();
+    void StartSelectorMode();
 };
 
 
