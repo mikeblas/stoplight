@@ -20,7 +20,7 @@
 
 #include "ExampleHandler.h"
 #include "StatsHandler.h"
-
+#include "ModeHandler.h"
 
 class stoplightd : public daemonize::daemon
 {
@@ -42,9 +42,12 @@ class stoplightd : public daemonize::daemon
     // web server
     CivetServer* server;
 
+    ModeID newWebMode;
+
     // handlers
     ExampleHandler h_ex;
     StatsHandler h_stats;
+    ModeHandler h_mode;
 
 public:
     stoplightd(daemonize::logger& log);
@@ -57,6 +60,27 @@ public:
     const OnOffCounter& GetLightCounter(Lights::LightLine line)
     {
         return lights->GetLightCounter(line);
+    }
+
+    std::string GetModeName()
+    {
+        if (mode == nullptr)
+            return "none";
+        else
+            return mode->GetModeName();
+    }
+
+    ModeID GetModeID()
+    {
+        if (mode == nullptr)
+            return NO_MODE;
+        else
+            return mode->GetModeID();
+    }
+
+    void SetNewWebMode(ModeID newMode)
+    {
+        newWebMode = newMode;
     }
 
     ~stoplightd()

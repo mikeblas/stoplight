@@ -55,6 +55,9 @@ public:
       lights.AllOff();
    }
 
+   virtual ModeID GetModeID() { return FLICKER_MODE; }
+   virtual std::string GetModeName() { return "Flicker"; }
+
    virtual ButtonResult OnDButtonPressed() override
    {
       log << log.critical << "FlickerMode: DButtonPressed" << std::endl;

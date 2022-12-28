@@ -32,6 +32,9 @@ public:
       quitting = true;
    }
 
+   virtual ModeID GetModeID() { return CLOCK_MODE; }
+   virtual std::string GetModeName() { return "Clock"; }
+
    virtual ButtonResult OnAButtonReleased() override
    {
       log << log.critical << "ClockMode: AButtonReleased" << std::endl;

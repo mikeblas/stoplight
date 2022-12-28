@@ -11,17 +11,20 @@ class SelectorMode : public ModeInterface
    std::condition_variable cond;
    std::mutex mtx;
 
-   int mode;
-   int newMode;
+   ModeID mode;
+   ModeID newMode;
 
 public:
    SelectorMode(Lights& lights, daemonize::logger& log)
       : ModeInterface(lights, log),
-        mode(0), newMode(-1)
+        mode(SELECTOR_MODE), newMode(NO_MODE)
    {
    }
 
    SelectorMode(const SelectorMode&) = delete;
+
+   virtual ModeID GetModeID() { return SELECTOR_MODE; }
+   virtual std::string GetModeName() { return "Selector"; }
 
    virtual void Shutdown() override
    {
@@ -34,7 +37,7 @@ public:
       log << log.critical << "SelectorMode: AButtonReleased" << std::endl;
       if (mode < 7)
       {
-          mode++;
+          mode = (ModeID) (mode + 1);
           UpdateLights();
       }
       return NOTHING;
@@ -45,7 +48,7 @@ public:
       log << log.critical << "SelectorMode: BButtonReleased" << std::endl;
       if (mode > 0)
       {
-          mode--;
+          mode = (ModeID) (mode - 1);
           UpdateLights();
       }
       return NOTHING;
@@ -69,9 +72,13 @@ public:
       return CHANGE_MODE;
    }
 
-   virtual int NewMode() override
+   virtual ModeID NewMode() override
    {
-      return newMode;
+      // the first displayed mode number is 0 here, so convert
+      // from that to an actual ModeID because selector mode can't be selected
+      if (newMode == NO_MODE)
+          return NO_MODE;
+      return (ModeID) (newMode + 1);
    }
 
    virtual void operator()() override;

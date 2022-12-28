@@ -7,7 +7,7 @@ void SelectorMode::operator()()
 
    // update lights for the first time,
    // and after that we have no work to actively do
-   mode = 0;
+   mode = SELECTOR_MODE;
    UpdateLights();
 }
 

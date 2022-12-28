@@ -7,52 +7,55 @@
 
 class RemoMode : public ModeInterface
 {
-   std::condition_variable cond;
-   std::mutex mtx;
+    std::condition_variable cond;
+    std::mutex mtx;
 
 public:
-   RemoMode(Lights& lights, daemonize::logger& log)
-      : ModeInterface(lights, log)
-   {
-   }
+    RemoMode(Lights& lights, daemonize::logger& log)
+        : ModeInterface(lights, log)
+    {
+    }
 
-   RemoMode(const RemoMode&) = delete;
+    RemoMode(const RemoMode&) = delete;
 
-   virtual void Shutdown() override
-   {
-      quitting = true;
-   }
+    virtual ModeID GetModeID() { return REMO_MODE; }
+    virtual std::string GetModeName() { return "Remote"; }
 
-   virtual ButtonResult OnAButtonReleased() override
-   {
-      log << log.critical << "RemoMode: AButtonReleased" << std::endl;
-      lights.ToggleRed();
-      return NOTHING;
-   }
+    virtual void Shutdown() override
+    {
+        quitting = true;
+    }
 
-   virtual ButtonResult OnBButtonReleased() override
-   {
-      log << log.critical << "RemoMode: BButtonReleased" << std::endl;
-      lights.ToggleYellow();
-      return NOTHING;
-   }
+    virtual ButtonResult OnAButtonReleased() override
+    {
+        log << log.critical << "RemoMode: AButtonReleased" << std::endl;
+        lights.ToggleRed();
+        return NOTHING;
+    }
 
-   virtual ButtonResult OnDButtonReleased() override
-   {
-      log << log.critical << "RemoMode: DButtonReleased" << std::endl;
-      std::lock_guard<std::mutex> lk(mtx);
-      cond.notify_one();
-      quitting = true;
-      return QUIT_MODE;
-   }
+    virtual ButtonResult OnBButtonReleased() override
+    {
+        log << log.critical << "RemoMode: BButtonReleased" << std::endl;
+        lights.ToggleYellow();
+        return NOTHING;
+    }
 
-   virtual ButtonResult OnCButtonReleased() override
-   {
-      log << log.critical << "RemoMode: CButtonReleased" << std::endl;
-      lights.ToggleGreen();
-      return NOTHING;
-   }
+    virtual ButtonResult OnDButtonReleased() override
+    {
+        log << log.critical << "RemoMode: DButtonReleased" << std::endl;
+        std::lock_guard<std::mutex> lk(mtx);
+        cond.notify_one();
+        quitting = true;
+        return QUIT_MODE;
+    }
 
-   virtual void operator()() override;
+    virtual ButtonResult OnCButtonReleased() override
+    {
+        log << log.critical << "RemoMode: CButtonReleased" << std::endl;
+        lights.ToggleGreen();
+        return NOTHING;
+    }
+
+    virtual void operator()() override;
 };
 

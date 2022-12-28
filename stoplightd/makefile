@@ -1,4 +1,3 @@
-
 OBJDIR   := obj
 LISTDIR  := lst
 
@@ -18,7 +17,7 @@ $(OBJDIR):
 $(LISTDIR):
 	-mkdir $(LISTDIR)
 
-stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o $(OBJDIR)/flickermode.o $(OBJDIR)/clockmode.o $(OBJDIR)/StatsHandler.o
+stoplightd: $(OBJDIR)/stoplightd.o $(OBJDIR)/regularlightmode.o $(OBJDIR)/selectormode.o $(OBJDIR)/main.o $(OBJDIR)/remomode.o $(OBJDIR)/flickermode.o $(OBJDIR)/clockmode.o $(OBJDIR)/StatsHandler.o $(OBJDIR)/ModeHandler.o
 	$(CXX) $(CXXFLAGS)  -o $@  $^ $(LDFLAGS)
 
 $(OBJDIR)/main.o: main.cpp stoplightd.h
@@ -45,6 +44,9 @@ $(OBJDIR)/flickermode.o: flickermode.cpp flickermode.h lights.h modeinterface.h
 $(OBJDIR)/StatsHandler.o: StatsHandler.cpp StatsHandler.h stoplightd.h
 	$(CXX) $< -o $@ -c $(CXXFLAGS)
 
+$(OBJDIR)/ModeHandler.o: ModeHandler.cpp ModeHandler.h stoplightd.h modeinterface.h
+	$(CXX) $< -o $@ -c $(CXXFLAGS)
+
 
 install:
 	cp stoplightd.service /etc/systemd/system
@@ -65,7 +67,9 @@ clean:
 	-rm -f $(OBJDIR)/flickermode.o
 	-rm -f $(OBJDIR)/clockmode.o
 	-rm -f $(OBJDIR)/selectormode.o
-	-rm -f $(OBJDIR)main.o
+	-rm -f $(OBJDIR)/main.o
+	-rm -f $(OBJDIR)/StatsHandler.o
+	-rm -f $(OBJDIR)/ModeHandler.o
 	-rm -f stoplightd
 	-rm -rf $(OBJDIR) $(LISTDIR)
 

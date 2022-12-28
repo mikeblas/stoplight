@@ -35,7 +35,9 @@ stoplightd::stoplightd(daemonize::logger& log)
       runner(false),
       theThread(nullptr),
       startTime(std::chrono::system_clock::now()),
-      h_stats(*this)
+      newWebMode(NO_MODE),
+      h_stats(*this),
+      h_mode(*this)
 {
     log << log.critical << "stoplightd ctor" << std::endl;
     log << log.critical << "gpiod version: " << gpiod_version_string() << std::endl;
@@ -76,6 +78,7 @@ void stoplightd::SetupRunner()
     // load the handlers
     server->addHandler("/example", h_ex);
     server->addHandler("/stats", h_stats);
+    server->addHandler("/mode", h_mode);
 
     // ready to run!
     runner = true;
@@ -130,7 +133,7 @@ void stoplightd::DispatchMessages(ModeInterface* mode, Buttons& b2)
 
 void stoplightd::StartSelectorMode()
 {
-    mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
+    mode = ModeFactory::FromModeNumber(SELECTOR_MODE, *lights, *buzzer, log);
     selectorMode = true;
 
     log << log.critical << "starting selector mode thread" << std::endl;
@@ -246,7 +249,7 @@ void stoplightd::run()
                   log << log.critical << "returning to selector mode" << std::endl;
 
                   // enter selector mode
-                  mode = ModeFactory::FromModeNumber(0, *lights, *buzzer, log);
+                  mode = ModeFactory::FromModeNumber(SELECTOR_MODE, *lights, *buzzer, log);
                   selectorMode = true;
 
                   log << log.critical << "starting selector mode thread" << std::endl;
@@ -259,18 +262,28 @@ void stoplightd::run()
             }
 
             // are we switching modes?
-            int newMode = mode->NewMode();
-            if (newMode != -1)
+            ModeID newMode = mode->NewMode();
+            if (newMode == NO_MODE)
+            {
+                // by demand of the web?
+                if (newWebMode != NO_MODE)
+                {
+                    newMode = newWebMode;
+                    newWebMode = NO_MODE;
+                }
+            }
+
+            // what's the decision?
+            if (newMode != NO_MODE)
             {
                log << log.critical << "New mode selected: " << newMode << std::endl;
                mode->Shutdown();
                delete mode;
 
-               mode = ModeFactory::FromModeNumber(newMode + 1, *lights, *buzzer, log);
+               mode = ModeFactory::FromModeNumber(newMode, *lights, *buzzer, log);
 
                if (mode == nullptr)
                {
-
                   log << log.critical << "waiting for thread" << std::endl;
 
                   // bogus mode, go to sleep
@@ -284,7 +297,6 @@ void stoplightd::run()
                }
                else
                {
-
                   log << log.critical << "starting new mode thread" << std::endl;
                   theThread = new std::thread(std::ref(*mode));
 

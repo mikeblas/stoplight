@@ -28,6 +28,9 @@ public:
 
    RegularLightMode(const RegularLightMode&) = delete;
 
+   virtual ModeID GetModeID() { return REGULAR_MODE; }
+   virtual std::string GetModeName() { return "Regular"; }
+
    void SetFromMultiplier();
 
    virtual void Shutdown() override
